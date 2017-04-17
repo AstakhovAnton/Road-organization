@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
-from Slava import Slava
+from roadBuilder import roadBuilder
 
 class Example(QMainWindow):
     def __init__(self):
@@ -19,8 +19,7 @@ class Example(QMainWindow):
 
     def initUI(self):
 
-        self.widget = Slava.CurveDrawer(self)
-        print(self.widget.vertices)
+        self.widget = roadBuilder.CurveDrawer(self)
         self.setCentralWidget(self.widget)
 
         col = QColor(0, 0, 0)
