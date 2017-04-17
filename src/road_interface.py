@@ -41,27 +41,27 @@ class Example(QMainWindow):
                                     % col.name())
 
 
-        exitAction = QAction(QIcon('exit2.png'), 'Exit', self)
+        exitAction = QAction(QIcon('../resources/exit2.png'), 'Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
 
-        previousAction = QAction(QIcon('left.png'), 'previous', self)
+        previousAction = QAction(QIcon('../resources/left.png'), 'previous', self)
         previousAction.setShortcut('F4')
         previousAction.setStatusTip('previous')
         previousAction.triggered.connect(self.close)
 
-        nextAction = QAction(QIcon('right.png'), 'next', self)
+        nextAction = QAction(QIcon('../resources/right.png'), 'next', self)
         nextAction.setShortcut('F3')
         nextAction.setStatusTip('next')
         nextAction.triggered.connect(self.close)
 
-        saveAction = QAction(QIcon('save.png'), 'save', self)
+        saveAction = QAction(QIcon('../resources/save.png'), 'save', self)
         saveAction.setShortcut('F2')
         saveAction.setStatusTip('save current file')
         saveAction.triggered.connect(self.save)
 
-        downloadAction = QAction(QIcon('globe.png'), 'Download', self)
+        downloadAction = QAction(QIcon('../resources/globe.png'), 'Download', self)
         downloadAction.setShortcut('F5')
         downloadAction.setStatusTip('Download road network')
         downloadAction.triggered.connect(self.close)
