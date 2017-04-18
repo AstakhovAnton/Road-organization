@@ -19,8 +19,8 @@ class Car:
             time.sleep(1/self.velocity)
             self.current_point = road.points[i]
             ##print(self.current_point)
-            if self.finish_vertex == where:
-                return
+        if self.finish_vertex == where:
+            return
         self.current_vertex = where
         self.movement(net)
 
