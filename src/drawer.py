@@ -1,8 +1,8 @@
 import sys, time
 #from drawer_classes import *
-#from Matrix import Network
-#from Car import Car
-#from Road import Road
+from Matrix import Network
+from Car import Car
+from Road import Road
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
 from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
@@ -98,7 +98,7 @@ class Vertex(Point):
         return v
 
 
-class Road:
+class Road1:
     def __init__(self, beginningVertex):
         self.vertex1 = beginningVertex
         self.ready = False
@@ -148,7 +148,7 @@ class Drawer(QWidget):
         self.count = 0
         self.pos = None
         self.hasBegun = False
-        #self.net = Network()
+        self.net = Network()
 
     def mousePressEvent(self, event):
         self.customMousePressEvent(self, event)
@@ -228,7 +228,7 @@ class Drawer(QWidget):
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
-        road2 = Road(v)
+        road2 = Road1(v)
         road2.isPrintable = False
         road2.finish(begv, points2)
         self.roads.append(road2)
@@ -258,7 +258,7 @@ class Drawer(QWidget):
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             v = self.closestvertex(point)
-            self.newroad = Road(v)
+            self.newroad = Road1(v)
             self.basepoint = Point(v.x(), v.y())
             self.pointList.append(self.basepoint)
             self.signal.switch.emit()
@@ -300,22 +300,19 @@ class Drawer(QWidget):
                 self.update()
 
     def move(self, road):
-        for point in road.points:
-            self.objpoint = point
-            self.update()
-            QApplication.processEvents()
-            time.sleep(0.01)
+        name1 = road.vertex1.getName()
+        name2 = road.vertex2.getName()
+        roadpoints = road.extract()
+        l = len(roadpoints)
+
+        self.net.add_node(name1)
+        self.net.add_node(name2)
+        self.net.add_edge(1, 2, l, roadpoints)
+        car = Car(200, self)
+
+        car.movement(self.net)
         self.objpoint = None
 
-        #name1 = road.vertex1.getName()
-        #name2 = road.vertex2.getName()
-        #roadpoints = road.extract()
-        #l = len(roadpoints)
-        #self.net.add_node(name1)
-        #self.net.add_node(name2)
-        #self.net.add_edge(name1, name2, l, roadpoints)
-        #car = Car(100)
-        #car.movement
 
     def nothingToAdd(self):
         return

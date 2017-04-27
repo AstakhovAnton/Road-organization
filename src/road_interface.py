@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
-from roadBuilder import roadBuilder
+from drawer import Drawer
 
 class Example(QMainWindow):
     def __init__(self):
@@ -19,10 +19,10 @@ class Example(QMainWindow):
 
     def initUI(self):
 
-        self.widget = roadBuilder.CurveDrawer(self)
+        self.widget = Drawer(self)
         self.setCentralWidget(self.widget)
 
-        col = QColor(0, 0, 0)
+        col = QColor(255, 255, 255)
 
         mydocwidget = QDockWidget('colour', self)
 
@@ -105,6 +105,8 @@ class Example(QMainWindow):
         else:
             event.ignore()
     def save(self):
+        pass
+
         fd = open('Saves.txt', 'w')
         verticeslist = self.widget.vertices
 

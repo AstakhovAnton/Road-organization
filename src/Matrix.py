@@ -14,6 +14,7 @@ class Network:
     def add_edge(self, name1, name2, w, list_points):
         self.matrix.add_edge(name1, name2, weight=w)
         self.mat_object[name1][name2] = Road(list_points)
+        self.mat_object[name2][name1] = Road(list_points)
 
     def remove_node(self, name):
         self.matrix.remove_node(name)
