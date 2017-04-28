@@ -1,14 +1,25 @@
 import networkx as nx
 import random
-g = nx.DiGraph()
-n = int(input())
+g = nx.MultiDiGraph()
+n = 5
 for i in range(n):
     g.add_node(i)
-for i in range(3 * n):
+for i in range(15 * n):
     a = random.randint(0, n - 1)
     b = random.randint(0, n - 1)
-    g.add_edge(a, b, weight=random.randint(1, 10))
-for i in range(10):
+    g.add_edge(a, b, weight=random.randint(1, 10), name = ((1, 2), (1, 2)))
+print(g[0][1])
+min = 100
+mykey = -1
+for i in g[0][1].keys():
+    if g[0][1][i]['weight'] < min:
+        min = g[0][1][i]['weight']
+        mykey = i
+print(i)
+
+
+
+'''for i in range(10):
     print(nx.degree(g, 1, i))
 #print("The shortest path between 1 and 2:")
 #print(*nx.dijkstra_path(g, 1, 2))
@@ -25,4 +36,4 @@ for n,nbrs in MG.adjacency_iter():
     for nbr,edict in nbrs.items():
         minvalue=min([d['weight'] for d in edict.values()])
         GG.add_edge(n,nbr, weight = minvalue)
-nx.shortest_path(GG,1,3)
+nx.shortest_path(GG,1,3) '''
