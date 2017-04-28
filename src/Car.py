@@ -30,10 +30,13 @@ class Car:
         self.drawer = drawer
 
     def way(self, net):
+        #for name in net.matrix.nodes():
+        #    print(name, ":", end=" ")
+        #    print(net.matrix.neighbors(name))
         return (nx.dijkstra_path(net.matrix, self.current_vertex, self.finish_vertex))[1]
 
     def movement(self, net):
-        print('Прибыл в', self.current_vertex)
+        #print('Прибыл в', self.current_vertex)
         time.sleep(1/self.velocity)
         if self.current_vertex == self.finish_vertex:
             return
@@ -46,8 +49,7 @@ class Car:
                 best_len = net.matrix[self.current_vertex][where][road]['weight']
                 best_road = road
 
-
-        for i in range(len(net.matrix[self.current_vertex][where][best_road])):
+        for i in range(len(net.matrix[self.current_vertex][where][best_road]['dots'])):
             time.sleep(1/self.velocity)
             self.current_point = net.matrix[self.current_vertex][where][best_road]['dots'][i]
             self.drawer.objpoint = Point(self.current_point[0], self.current_point[1])

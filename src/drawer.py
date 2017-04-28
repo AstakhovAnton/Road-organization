@@ -61,11 +61,13 @@ class Point:
         return (((point2.x() - point1.x()) ** 2 + (point2.y() - point1.y()) ** 2) ** 0.5)
 
 class Vertex(Point):
-    def __init__(self, abs, ord, name):
+    def __init__(self, abs, ord, name, drawer):
         super().__init__(abs, ord)
+        self.drawer = drawer
         self.name = name
         self.isBeginning = False
         self.isEnd = False
+        self.drawer.net.add_node(self.name)
 
     def setBeginning(self):
         self.isBeginning = True
@@ -87,29 +89,32 @@ class Vertex(Point):
     i = c
 
     @staticmethod
-    def newVertex(x, y):
+    def newVertex(x, y, drawer):
         if Vertex.i <= Vertex.c + 51:
             k = ((Vertex.i - Vertex.c) % 2) + 1
             name = chr(Vertex.c + (Vertex.i - Vertex.c) // 2 ) + str(k)
             Vertex.i = Vertex.i + 1
         else:
             name = ''
-        v = Vertex(x, y, name)
+        v = Vertex(x, y, name, drawer)
         return v
 
 
 class Road1:
-    def __init__(self, beginningVertex):
+    def __init__(self, beginningVertex, drawer):
         self.vertex1 = beginningVertex
         self.ready = False
         self.isPrintable = True
         self.points = []
+        self.drawer = drawer
 
     def finish(self, endingVertex, points):
         if self.ready == False:
             self.vertex2 = endingVertex
             self.points = points
             self.ready = True
+            print(self.vertex1.name, self.vertex2.name, len(self.points))
+            self.drawer.net.add_edge(self.vertex1.name, self.vertex2.name, len(self.points), self.extract())
 
     def polygonize(self):
         if self.ready:
@@ -228,7 +233,7 @@ class Drawer(QWidget):
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
-        road2 = Road1(v)
+        road2 = Road1(v, self)
         road2.isPrintable = False
         road2.finish(begv, points2)
         self.roads.append(road2)
@@ -245,7 +250,7 @@ class Drawer(QWidget):
         if event.button() == Qt.LeftButton:
             point = Point(event.x(), event.y())
             self.pointList.append(point)
-            v = Vertex.newVertex(event.x(), event.y())
+            v = Vertex.newVertex(event.x(), event.y(), self)
             self.vertices.append(v)
             self.update()
             self.finishTheRoad(v)
@@ -253,12 +258,12 @@ class Drawer(QWidget):
 
     def makeVertexStartRoad(self, event):
         if event.button() == Qt.RightButton:
-            self.vertices.append(Vertex.newVertex(event.x(), event.y()))
+            self.vertices.append(Vertex.newVertex(event.x(), event.y(), self))
             self.update()
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             v = self.closestvertex(point)
-            self.newroad = Road1(v)
+            self.newroad = Road1(v, self)
             self.basepoint = Point(v.x(), v.y())
             self.pointList.append(self.basepoint)
             self.signal.switch.emit()
@@ -277,7 +282,7 @@ class Drawer(QWidget):
 
     def allocate(self, event):
         point = Point(event.x(), event.y())
-        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 7:
+        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             if self.hasBegun == False:
                 v = self.closestvertex(point)
                 v.setBeginning()
@@ -287,11 +292,15 @@ class Drawer(QWidget):
             self.update()
             self.count += 1
             if self.count == 2:
-                for road in self.roads:
-                    if road.vertex1.isBeginning and road.vertex2.isEnd:
-                        allocroad = road
+                for vertex in self.vertices:
+                    if vertex.isBeginning:
+                        v1 = vertex
                         break
-                self.move(allocroad)
+                for vertex in self.vertices:
+                    if vertex.isEnd:
+                        v2 = vertex
+                        break
+                self.move(v1, v2)
                 self.count = 0
                 for vertex in self.vertices:
                     if vertex.isBeginning or vertex.isEnd:
@@ -299,20 +308,10 @@ class Drawer(QWidget):
                 self.hasBegun = False
                 self.update()
 
-    def move(self, road):
-        name1 = road.vertex1.getName()
-        name2 = road.vertex2.getName()
-        roadpoints = road.extract()
-        l = len(roadpoints)
-
-        self.net.add_node(name1)
-        self.net.add_node(name2)
-        self.net.add_edge(1, 2, l, roadpoints)
-        car = Car(200, self)
-
+    def move(self, v1, v2):
+        car = Car(50, self, v1.name, v2.name)
         car.movement(self.net)
         self.objpoint = None
-
 
     def nothingToAdd(self):
         return
