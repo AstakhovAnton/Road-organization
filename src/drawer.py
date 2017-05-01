@@ -68,6 +68,25 @@ class Drawer(QWidget):
         self.hasBegun = False
         self.net = Network()
 
+    def loadFromFile(self, verticeslist, roadlists):
+        self.vertices = []
+        self.roads = []
+        for vcortege in verticeslist:
+            self.vertices.append(Vertex.newVertex(vcortege[0], vcortege[1], self.net))
+        for rlist in roadlists:
+            for vertex in self.vertices:
+                if vertex.x() == rlist[0][0] and vertex.y() == rlist[0][1]:
+                    begv = vertex
+            road = Road(begv, self.net)
+            for vertex in self.vertices:
+                if vertex.x() == rlist[-1][0] and vertex.y() == rlist[-1][1]:
+                    endv = vertex
+            points = []
+            for cortege in rlist:
+                points.append(Point(cortege[0], cortege[1]))
+            road.finish(endv, points)
+
+
     def mousePressEvent(self, event):
         self.customMousePressEvent(self, event)
 
