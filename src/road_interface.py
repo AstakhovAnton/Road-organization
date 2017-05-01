@@ -8,10 +8,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 34211cb205f8518a4211c2153635b1c5e49f096f
 from drawer import Drawer
 
 class Example(QMainWindow):
@@ -115,11 +112,7 @@ class Example(QMainWindow):
         else:
             event.ignore()
     def save(self):
-<<<<<<< HEAD
 
-=======
-        pass
->>>>>>> 34211cb205f8518a4211c2153635b1c5e49f096f
 
         fd = open('Saves.txt', 'w')
         roads = self.widget.roads
@@ -177,7 +170,7 @@ class Example(QMainWindow):
             roads.append(road)
 
         fd.close()
-        ##self.widget.loadFromFile(vertices, roads)
+        self.widget.loadFromFile(vertices, roads)
 
     def showDialog(self):
         col = QColorDialog.getColor()
@@ -188,6 +181,7 @@ class Example(QMainWindow):
 
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     ex = Example()
     sys.exit(app.exec_())

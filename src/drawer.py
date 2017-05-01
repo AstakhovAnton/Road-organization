@@ -85,7 +85,8 @@ class Drawer(QWidget):
             for cortege in rlist:
                 points.append(Point(cortege[0], cortege[1]))
             road.finish(endv, points)
-
+            self.roads.append(road)
+        self.update()
 
     def mousePressEvent(self, event):
         self.customMousePressEvent(self, event)
