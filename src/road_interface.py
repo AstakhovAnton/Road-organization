@@ -192,12 +192,17 @@ class MyWidget(QWidget) :
         self.btn2 = QPushButton('Хаос', self)
         self.btn2.resize(self.btn2.sizeHint())
         self.btn2.clicked.connect(self.drawer.chaos)
-        
+
+        self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
+        self.btn3.resize(self.btn3.sizeHint())
+        self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
 
         hbox = QHBoxLayout()
+        hbox.addWidget(self.btn3)
         hbox.addStretch(1)
         hbox.addWidget(self.btn1)
         hbox.addWidget(self.btn2)
+
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.drawer)
