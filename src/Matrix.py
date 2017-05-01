@@ -1,5 +1,5 @@
 import networkx as nx
-from Car import Car
+#from Car import Car
 
 class Network:
     def __init__(self):
@@ -16,6 +16,7 @@ class Network:
     def remove_edge(self, name1, name2, w):
         self.matrix.remove_edge(name1, name2)
 
+'''
 if __name__ == '__main__':
     mynet = Network()
     for i in range(1, 4):
@@ -26,3 +27,4 @@ if __name__ == '__main__':
     mynet.add_edge(3, 2, 1, ((1, 1), (2, 2), (3, 3), (4, 4)))
     mycar = Car(2, 1, 2)
     mycar.movement(mynet)
+'''
