@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
-from Slava import Slava
+from drawer import Drawer
 
 class Example(QMainWindow):
     def __init__(self):
@@ -19,11 +19,10 @@ class Example(QMainWindow):
 
     def initUI(self):
 
-        self.widget = Slava.CurveDrawer(self)
-        print(self.widget.vertices)
+        self.widget = Drawer(self)
         self.setCentralWidget(self.widget)
 
-        col = QColor(0, 0, 0)
+        col = QColor(255, 255, 255)
 
         mydocwidget = QDockWidget('colour', self)
 
@@ -56,7 +55,7 @@ class Example(QMainWindow):
         nextAction.setStatusTip('next')
         nextAction.triggered.connect(self.close)
 
-        saveAction = QAction(QIcon('../resources/save.png'), 'save', self)
+        saveAction = QAction(QIcon('../resources/save.png'), 'Save', self)
         saveAction.setShortcut('F2')
         saveAction.setStatusTip('save current file')
         saveAction.triggered.connect(self.save)
@@ -66,11 +65,18 @@ class Example(QMainWindow):
         downloadAction.setStatusTip('Download road network')
         downloadAction.triggered.connect(self.close)
 
+        loadAction = QAction(QIcon('../resources/load.png'), 'load file', self)
+        loadAction.setShortcut('F6')
+        loadAction.setStatusTip('Download existing file')
+        loadAction.triggered.connect(self.load)
+
         self.statusBar()
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)
+        fileMenu.addAction(saveAction)
+        fileMenu.addAction(loadAction)
 
         toolbar = self.addToolBar('Exit')
         toolbar.addAction(exitAction)
@@ -106,16 +112,65 @@ class Example(QMainWindow):
         else:
             event.ignore()
     def save(self):
+
+
         fd = open('Saves.txt', 'w')
-        verticeslist = self.widget.vertices
+        roads = self.widget.roads
+        vertices = self.widget.vertices
 
-        coordlist = []
-        for vertex in verticeslist:
-            coordlist.append((vertex.x(), vertex.y()))
-        for cortege in coordlist:
+        for vertex in vertices:
+            cortege = vertex.extract()
+
             fd.write(str(cortege) + ' ')
-        fd.close()
+        fd.write('\n')
 
+        for road in roads:
+            list = road.extract()
+
+            for cortege in list:
+                fd.write(str(cortege) + ' ')
+            fd.write('\n')
+        fd.close()
+    def load(self):
+        fd = open('Saves.txt', 'r')
+
+        line = fd.readline()
+        vertices = []
+        roads = []
+        list1 = line.split()
+        list2 = []
+
+        for element in list1:
+            element = element.replace('(', '')
+            element = element.replace(')', '')
+            element = element.replace(',', '')
+            element = element.replace(' ', '')
+            list2.append(int(element))
+
+
+        for i in range(len(list2)//2) :
+            vertices.append((list2[2*i], list2[2*i+1]))
+
+        road = []
+        line = fd.readline()
+        while line != '':
+            line = fd.readline()
+            list1 = line.split()
+            list2 = []
+
+            for element in list1:
+                element = element.replace('(', '')
+                element = element.replace(')', '')
+                element = element.replace(',', '')
+                element = element.replace(' ', '')
+                list2.append(int(element))
+
+            for i in range(len(list2) // 2):
+                road.append((list2[2 * i], list2[2 * i + 1]))
+            roads.append(road)
+
+        fd.close()
+        ##self.widget.loadFromFile(vertices, roads)
 
     def showDialog(self):
         col = QColorDialog.getColor()
