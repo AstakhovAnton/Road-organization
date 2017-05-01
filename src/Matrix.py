@@ -9,11 +9,11 @@ class Network:
         self.matrix.add_node(name)
 
     def add_edge(self, name1, name2, w, list_points):
-        self.matrix.add_edge(name1, name2, weight=w, dots=list_points)
+        self.matrix.add_edge(name1, name2, weight=w, dots=list_points, on_road=[0] * len(list_points))
 
     def remove_node(self, name):
         self.matrix.remove_node(name)
-    def remove_edge(self, name1, name2, w):
+    def remove_edge(self, name1, name2):
         self.matrix.remove_edge(name1, name2)
 
 '''
