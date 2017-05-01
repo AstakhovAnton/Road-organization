@@ -1,12 +1,11 @@
 import sys, time, math, threading
 from Matrix import Network
 from Car import Car
-from Tracker import Tracker
 from Points import Point, Vertex, Road
+from Chaos import Chaos
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
 from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
-import random
 
 class Communicate(QObject):
     switch = pyqtSignal()
@@ -15,11 +14,14 @@ class Controller:
     def __init__(self, drawer):
         self.drawer = drawer
         self.i = 1
+        self.j = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
+        self.drawer.whatRoadToDraw = self.roadschema
 
     def setControllerSchema(self):
         self.schema = (Drawer.pressMethods[self.i], Drawer.moveMethods[self.i], Drawer.drawMethods[self.i])
+        self.roadschema = Drawer.roadBuildingMethods[self.j]
 
     def setDrawerSchema(self, schema):
         self.drawer.customMousePressEvent = schema[0]
@@ -43,6 +45,20 @@ class Controller:
         self.setDrawerSchema(self.schema)
         self.drawer.update()
 
+    def switchBehaviorToValue(self, i):
+        self.i = i
+        self.setControllerSchema()
+        self.setDrawerSchema(self.schema)
+        self.drawer.update()
+
+    def setRoadSchema(self):
+        self.roadschema = Drawer.roadBuildingMethods[self.j]
+
+    def switchRoadBuildingSchema(self):
+        self.j = (self.j + 1) % 2
+        self.setRoadSchema()
+        self.drawer.whatRoadToDraw = self.roadschema
+
 class Drawer(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -56,9 +72,15 @@ class Drawer(QWidget):
 
         self.setGeometry(200, 200, 1000, 500)
         self.setWindowTitle('Drawer')
-        self.btn = QPushButton('Переключение режимов', self)
-        self.btn.resize(self.btn.sizeHint())
-        self.btn.clicked.connect(self.controller.switchByButton)
+        #self.btn1 = QPushButton('Переключение режимов', self)
+        #self.btn1.resize(self.btn1.sizeHint())
+        #self.btn1.clicked.connect(self.controller.switchByButton)
+        #self.btn2 = QPushButton('Хаос', self)
+        #self.btn2.resize(self.btn2.sizeHint())
+        #self.btn2.clicked.connect(self.chaos)
+        #self.btn3 = QPushButton('1', self)
+        #self.btn3.resize(self.btn3.sizeHint())
+        #self.btn3.clicked.connect(self.controller.switchRoadBuildingSchema)
         self.vertices = []
         self.roads = []
         self.pointList = []
@@ -68,6 +90,25 @@ class Drawer(QWidget):
         self.pos = None
         self.hasBegun = False
         self.net = Network()
+
+    def loadFromFile(self, verticeslist, roadlists):
+        self.vertices = []
+        self.roads = []
+        for vcortege in verticeslist:
+            self.vertices.append(Vertex.newVertex(vcortege[0], vcortege[1], self.net))
+        for rlist in roadlists:
+            for vertex in self.vertices:
+                if vertex.x() == rlist[0][0] and vertex.y() == rlist[0][1]:
+                    begv = vertex
+            road = Road(begv, self.net)
+            for vertex in self.vertices:
+                if vertex.x() == rlist[-1][0] and vertex.y() == rlist[-1][1]:
+                    endv = vertex
+            points = []
+            for cortege in rlist:
+                points.append(Point(cortege[0], cortege[1]))
+            road.finish(endv, points)
+
 
     def mousePressEvent(self, event):
         self.customMousePressEvent(self, event)
@@ -182,6 +223,17 @@ class Drawer(QWidget):
         road1 = self.newroad
         road1.finish(v, points1)
         self.roads.append(road1)
+        self.whatRoadToDraw(self, v)
+        self.update()
+        self.pointList.clear()
+        self.signal.switch.emit()
+        self.pos = None
+
+    def oneSided(self, v):
+        return
+
+    def twoSided(self, v):
+        print('lel')
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
@@ -189,10 +241,6 @@ class Drawer(QWidget):
         road2.isPrintable = False
         road2.finish(begv, points2)
         self.roads.append(road2)
-        self.update()
-        self.pointList.clear()
-        self.signal.switch.emit()
-        self.pos = None
 
     def noChanges(self, event):
         QWidget.mouseMoveEvent(self, event)
@@ -257,7 +305,11 @@ class Drawer(QWidget):
         def behavior(v, drawer, v1, v2):
             car = Car(v, drawer)
             car.moveAtoB(drawer.net, v1, v2)
-        threading.Thread(target=behavior, args=(random.randint(5, 15) * 10, self, v1, v2,)).start()
+        threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
+
+    def chaos(self):
+        self.controller.switchBehaviorToValue(3)
+        c = Chaos(self)
 
     def nothingToAdd(self):
         self.borderPaint()
@@ -279,6 +331,7 @@ class Drawer(QWidget):
     pressMethods = (waitForFinish, makeVertexStartRoad, allocate)
     moveMethods = (moveAndDraw, noChanges, noChanges)
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
+    roadBuildingMethods = (oneSided, twoSided)
 
 
 if __name__ == '__main__':
