@@ -1,8 +1,8 @@
 import sys, time, math, threading
 from Matrix import Network
 from Car import Car
-from Tracker import Tracker
 from Points import Point, Vertex, Road
+from Chaos import Chaos
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
 from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
@@ -55,9 +55,12 @@ class Drawer(QWidget):
 
         self.setGeometry(200, 200, 1000, 500)
         self.setWindowTitle('Drawer')
-        self.btn = QPushButton('Переключение режимов', self)
-        self.btn.resize(self.btn.sizeHint())
-        self.btn.clicked.connect(self.controller.switchByButton)
+        self.btn1 = QPushButton('Переключение режимов', self)
+        self.btn1.resize(self.btn1.sizeHint())
+        self.btn1.clicked.connect(self.controller.switchByButton)
+        self.btn2 = QPushButton('Хаос', self)
+        self.btn2.resize(self.btn2.sizeHint())
+        self.btn2.clicked.connect(self.chaos)
         self.vertices = []
         self.roads = []
         self.pointList = []
@@ -85,8 +88,7 @@ class Drawer(QWidget):
             for cortege in rlist:
                 points.append(Point(cortege[0], cortege[1]))
             road.finish(endv, points)
-            self.roads.append(road)
-        self.update()
+
 
     def mousePressEvent(self, event):
         self.customMousePressEvent(self, event)
@@ -277,6 +279,9 @@ class Drawer(QWidget):
             car = Car(v, drawer)
             car.moveAtoB(drawer.net, v1, v2)
         threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
+
+    def chaos(self):
+        c = Chaos(self)
 
     def nothingToAdd(self):
         self.borderPaint()

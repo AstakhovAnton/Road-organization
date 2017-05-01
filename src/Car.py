@@ -40,18 +40,12 @@ class Car:
 
         for i in range(len(net.matrix[self.current_vertex][where][best_road]['dots'])):
             time.sleep(1/self.velocity)
-            while net.matrix[self.current_vertex][where][best_road]['on_road'][i] == 1:
-                time.sleep(1/inf)
-            if i > 0:
-                     net.matrix[self.current_vertex][where][best_road]['on_road'][i - 1] = 0
-            net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 1
             self.current_point = net.matrix[self.current_vertex][where][best_road]['dots'][i]
             point = Point(self.current_point[0], self.current_point[1])
             self.tracker.setPos(point)
             self.drawer.update()
             QApplication.processEvents()
-            
-        net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 0
+
         self.current_vertex = where
         self.movement(net)
 

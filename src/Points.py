@@ -1,6 +1,5 @@
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPolygon
-from Matrix import Network
 
 class Point:
     def __init__(self, abs, ord):
@@ -46,8 +45,6 @@ class Vertex(Point):
 
     def getName(self):
         return self.name
-    def extract(self):
-        return (self.x(),self.y())
 
     c = ord('A')
     i = c
@@ -63,6 +60,8 @@ class Vertex(Point):
         v = Vertex(x, y, net, name)
         return v
 
+    def extract(self):
+        return (self.x(), self.y())
 
 class Road:
     def __init__(self, beginningVertex, net):
