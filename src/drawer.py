@@ -1,4 +1,4 @@
-import sys, time
+import sys, time, math
 #from drawer_classes import *
 from Matrix import Network
 from Car import Car
@@ -58,7 +58,7 @@ class Point:
 
     @staticmethod
     def dist(point1, point2):
-        return (((point2.x() - point1.x()) ** 2 + (point2.y() - point1.y()) ** 2) ** 0.5)
+        return ((point2.x() - point1.x()) ** 2 + (point2.y() - point1.y()) ** 2) ** 0.5
 
 class Vertex(Point):
     def __init__(self, abs, ord, name, drawer):
@@ -113,7 +113,7 @@ class Road1:
             self.vertex2 = endingVertex
             self.points = points
             self.ready = True
-            print(self.vertex1.name, self.vertex2.name, len(self.points))
+            #print(self.vertex1.name, self.vertex2.name, len(self.points))
             self.drawer.net.add_edge(self.vertex1.name, self.vertex2.name, len(self.points), self.extract())
 
     def polygonize(self):
@@ -216,6 +216,13 @@ class Drawer(QWidget):
         distance_from_previous_point = Point.dist(point, self.basepoint)
         self.pos = event.pos()
         if distance_from_previous_point >= 1:
+            if distance_from_previous_point >= 2:
+                cos = (point.x() - self.basepoint.x()) / distance_from_previous_point
+                sin = (point.y() - self.basepoint.y()) / distance_from_previous_point
+                point = Point(self.basepoint.x() + round(cos), self.basepoint.y() + round(sin))
+                for i in range(1, math.ceil(distance_from_previous_point)):
+                    self.pointList.append(point)
+                    point = Point(self.basepoint.x() + round(cos*i), self.basepoint.y() + round(sin*i))
             self.pointList.append(point)
             self.basepoint = point
             self.update()
@@ -225,7 +232,18 @@ class Drawer(QWidget):
             self.pointList.append(Point(v.x(), v.y()))
             self.finishTheRoad(v)
 
+    def previous(self, point):
+        i = self.pointList.index(point)
+        if i != 0:
+            return self.pointList[i - 1]
+        else:
+            return Point(-1, -1)
+
     def finishTheRoad(self, v):
+        for point in self.pointList:
+            d = Point.dist(self.previous(point), point)
+            if d == 0.0:
+                self.pointList.remove(point)
         points1 = self.pointList.copy()
         road1 = self.newroad
         road1.finish(v, points1)
@@ -249,17 +267,20 @@ class Drawer(QWidget):
     def waitForFinish(self, event):
         if event.button() == Qt.LeftButton:
             point = Point(event.x(), event.y())
-            self.pointList.append(point)
-            v = Vertex.newVertex(event.x(), event.y(), self)
-            self.vertices.append(v)
-            self.update()
-            self.finishTheRoad(v)
+            if self.mindistance(point) > 15:
+                self.pointList.append(point)
+                v = Vertex.newVertex(event.x(), event.y(), self)
+                self.vertices.append(v)
+                self.update()
+                self.finishTheRoad(v)
 
 
     def makeVertexStartRoad(self, event):
         if event.button() == Qt.RightButton:
-            self.vertices.append(Vertex.newVertex(event.x(), event.y(), self))
-            self.update()
+            point = Point(event.x(), event.y())
+            if not self.vertices or self.mindistance(point) > 15:
+                self.vertices.append(Vertex.newVertex(event.x(), event.y(), self))
+                self.update()
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             v = self.closestvertex(point)
@@ -309,7 +330,7 @@ class Drawer(QWidget):
                 self.update()
 
     def move(self, v1, v2):
-        car = Car(50, self, v1.name, v2.name)
+        car = Car(100, self, v1.name, v2.name)
         car.movement(self.net)
         self.objpoint = None
 
