@@ -19,7 +19,7 @@ class Example(QMainWindow):
 
     def initUI(self):
 
-        self.widget = Drawer(self)
+        self.widget = MyWidget(self)
         self.setCentralWidget(self.widget)
 
         col = QColor(255, 255, 255)
@@ -179,6 +179,32 @@ class Example(QMainWindow):
             self.widget.setStyleSheet("QWidget { background-color: %s }"
                                     % col.name())
 
+class MyWidget(QWidget) :
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.initUI()
+
+    def initUI(self):
+        self.drawer = Drawer(self)
+        self.btn1 = QPushButton('Переключение режимов', self)
+        self.btn1.resize(self.btn1.sizeHint())
+        self.btn1.clicked.connect(self.drawer.controller.switchByButton)
+        self.btn2 = QPushButton('Хаос', self)
+        self.btn2.resize(self.btn2.sizeHint())
+        self.btn2.clicked.connect(self.drawer.chaos)
+        
+
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(self.btn1)
+        hbox.addWidget(self.btn2)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.drawer)
+
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
 
 if __name__ == '__main__':
 
