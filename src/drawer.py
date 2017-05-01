@@ -1,15 +1,14 @@
-import sys, time, math
-#from drawer_classes import *
+import sys, time, math, threading
 from Matrix import Network
 from Car import Car
-from Road import Road
+from Tracker import Tracker
+from Points import Point, Vertex, Road
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
 from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
 
 class Communicate(QObject):
     switch = pyqtSignal()
-    #switch2 = pyqtSignal()
 
 class Controller:
     def __init__(self, drawer):
@@ -41,94 +40,7 @@ class Controller:
             self.i = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-
-class Point:
-    def __init__(self, abs, ord):
-        self.abs = abs
-        self.ord = ord
-
-    def x(self):
-        return(self.abs)
-
-    def y(self):
-        return(self.ord)
-
-    def QPoint(self):
-        return QPoint(self.abs, self.ord)
-
-    @staticmethod
-    def dist(point1, point2):
-        return ((point2.x() - point1.x()) ** 2 + (point2.y() - point1.y()) ** 2) ** 0.5
-
-class Vertex(Point):
-    def __init__(self, abs, ord, name, drawer):
-        super().__init__(abs, ord)
-        self.drawer = drawer
-        self.name = name
-        self.isBeginning = False
-        self.isEnd = False
-        self.drawer.net.add_node(self.name)
-
-    def setBeginning(self):
-        self.isBeginning = True
-
-    def setEnd(self):
-        self.isEnd = True
-
-    def setUnallocated(self):
-        self.isBeginning = False
-        self.isEnd = False
-
-    def setName(self, str):
-        self.name = str
-
-    def getName(self):
-        return self.name
-
-    c = ord('A')
-    i = c
-
-    @staticmethod
-    def newVertex(x, y, drawer):
-        if Vertex.i <= Vertex.c + 51:
-            k = ((Vertex.i - Vertex.c) % 2) + 1
-            name = chr(Vertex.c + (Vertex.i - Vertex.c) // 2 ) + str(k)
-            Vertex.i = Vertex.i + 1
-        else:
-            name = ''
-        v = Vertex(x, y, name, drawer)
-        return v
-
-
-class Road1:
-    def __init__(self, beginningVertex, drawer):
-        self.vertex1 = beginningVertex
-        self.ready = False
-        self.isPrintable = True
-        self.points = []
-        self.drawer = drawer
-
-    def finish(self, endingVertex, points):
-        if self.ready == False:
-            self.vertex2 = endingVertex
-            self.points = points
-            self.ready = True
-            #print(self.vertex1.name, self.vertex2.name, len(self.points))
-            self.drawer.net.add_edge(self.vertex1.name, self.vertex2.name, len(self.points), self.extract())
-
-    def polygonize(self):
-        if self.ready:
-            qpoints = []
-            for point in self.points:
-                qpoints.append(point.QPoint())
-            return QPolygon(qpoints)
-
-    def extract(self):
-        if self.ready:
-            points = []
-            for point in self.points:
-                points.append((point.x(), point.y()))
-            return points
+        self.drawer.update()
 
 class Drawer(QWidget):
     def __init__(self, parent):
@@ -149,6 +61,7 @@ class Drawer(QWidget):
         self.vertices = []
         self.roads = []
         self.pointList = []
+        self.carList = []
         self.show()
         self.count = 0
         self.pos = None
@@ -166,14 +79,13 @@ class Drawer(QWidget):
         qp.setPen(pen)
         points = []
         for point in self.pointList:
-           points.append(point.QPoint())
+           points.append(point.myQPoint())
         polygon = QPolygon(points)
         qp.drawPolyline(polygon)
 
     def paintEvent(self, event):
         q1 = QPainter()
-        q4 = QPainter()
-
+        q2 = QPainter()
         for road in self.roads:
             if road.isPrintable:
                 q1.begin(self)
@@ -182,13 +94,34 @@ class Drawer(QWidget):
                 if road.ready:
                     q1.drawPolyline(road.polygonize())
         for vertex in self.vertices:
-            q4.begin(self)
+            q2.begin(self)
             brush = QBrush(Qt.SolidPattern)
-            q4.setBrush(brush)
-            q4.drawEllipse(vertex.QPoint(), 7, 7)
-            q4.setFont(QFont('Decorative', 10))
-            q4.drawText(vertex.x() + 7, vertex.y() + 7, 30, 20, 0, vertex.name)
+            q2.setBrush(brush)
+            q2.drawEllipse(vertex.myQPoint(), 7, 7)
+            q2.setFont(QFont('Decorative', 10))
+            q2.drawText(vertex.x() + 7, vertex.y() + 7, 30, 20, 0, vertex.name)
+        q3 = QPainter()
+        for vertex in self.vertices:
+            if vertex.isBeginning:
+                q3.begin(self)
+                pen = QPen(Qt.blue, 3, Qt.DashLine)
+                q3.setPen(pen)
+                q3.drawEllipse(vertex.myQPoint(), 11, 11)
+            if vertex.isEnd:
+                q3.begin(self)
+                pen = QPen(Qt.red, 2, Qt.DashLine)
+                q3.setPen(pen)
+                q3.drawEllipse(vertex.myQPoint(), 10, 10)
+        q4 = QPainter()
+        for tracker in self.carList:
+            if tracker.pos:
+                q4.begin(self)
+                brush = QBrush(Qt.SolidPattern)
+                q4.setBrush(brush)
+                q4.drawEllipse(tracker.pos.myQPoint(), 5, 5)
         q1.end()
+        q2.end()
+        q3.end()
         q4.end()
         self.drawAdditional(self)
 
@@ -251,7 +184,7 @@ class Drawer(QWidget):
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
-        road2 = Road1(v, self)
+        road2 = Road(v, self.net)
         road2.isPrintable = False
         road2.finish(begv, points2)
         self.roads.append(road2)
@@ -259,7 +192,6 @@ class Drawer(QWidget):
         self.pointList.clear()
         self.signal.switch.emit()
         self.pos = None
-        self.objpoint = None
 
     def noChanges(self, event):
         QWidget.mouseMoveEvent(self, event)
@@ -269,7 +201,7 @@ class Drawer(QWidget):
             point = Point(event.x(), event.y())
             if self.mindistance(point) > 15:
                 self.pointList.append(point)
-                v = Vertex.newVertex(event.x(), event.y(), self)
+                v = Vertex.newVertex(event.x(), event.y(), self.net)
                 self.vertices.append(v)
                 self.update()
                 self.finishTheRoad(v)
@@ -278,13 +210,13 @@ class Drawer(QWidget):
     def makeVertexStartRoad(self, event):
         if event.button() == Qt.RightButton:
             point = Point(event.x(), event.y())
-            if not self.vertices or self.mindistance(point) > 15:
-                self.vertices.append(Vertex.newVertex(event.x(), event.y(), self))
+            if not self.vertices or self.mindistance(point) > 50:
+                self.vertices.append(Vertex.newVertex(event.x(), event.y(), self.net))
                 self.update()
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             v = self.closestvertex(point)
-            self.newroad = Road1(v, self)
+            self.newroad = Road(v, self.net)
             self.basepoint = Point(v.x(), v.y())
             self.pointList.append(self.basepoint)
             self.signal.switch.emit()
@@ -300,67 +232,52 @@ class Drawer(QWidget):
             q2.setPen(pen)
             q2.drawLine(self.pos.x(), self.pos.y(), self.pointList[-1].x(), self.pointList[-1].y())
             q2.end()
+        self.borderPaint()
 
     def allocate(self, event):
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             if self.hasBegun == False:
-                v = self.closestvertex(point)
-                v.setBeginning()
+                self.v1 = self.closestvertex(point)
+                self.v1.setBeginning()
                 self.hasBegun = True
             else:
-                self.closestvertex(point).setEnd()
+                self.v2 = self.closestvertex(point)
+                self.v2.setEnd()
             self.update()
             self.count += 1
             if self.count == 2:
-                for vertex in self.vertices:
-                    if vertex.isBeginning:
-                        v1 = vertex
-                        break
-                for vertex in self.vertices:
-                    if vertex.isEnd:
-                        v2 = vertex
-                        break
-                self.move(v1, v2)
+                self.move(self.v1, self.v2)
                 self.count = 0
-                for vertex in self.vertices:
-                    if vertex.isBeginning or vertex.isEnd:
-                        vertex.setUnallocated()
                 self.hasBegun = False
                 self.update()
 
     def move(self, v1, v2):
-        car = Car(100, self, v1.name, v2.name)
-        car.movement(self.net)
-        self.objpoint = None
+        def behavior(v, drawer, v1, v2):
+            car = Car(v, drawer)
+            car.moveAtoB(drawer.net, v1, v2)
+        threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
 
     def nothingToAdd(self):
-        return
+        self.borderPaint()
 
-    def drawAllocated(self):
-        q1 = QPainter()
+    def borderPaint(self):
+        q = QPainter()
         for vertex in self.vertices:
-            if vertex.isBeginning:
-                q1.begin(self)
-                pen = QPen(Qt.blue, 3, Qt.DashLine)
-                q1.setPen(pen)
-                q1.drawEllipse(vertex.QPoint(), 10, 10)
-            elif vertex.isEnd:
-                q1.begin(self)
-                pen = QPen(Qt.red, 3, Qt.DashLine)
-                q1.setPen(pen)
-                q1.drawEllipse(vertex.QPoint(), 10, 10)
+            q.begin(self)
+            brush = QBrush(Qt.BDiagPattern)
+            pen = QPen(Qt.black, 1, Qt.DashLine)
+            q.setBrush(brush)
+            q.setPen(pen)
+            q.drawEllipse(vertex.myQPoint(), 50, 50)
+        q.end()
 
-        q2 = QPainter()
-        if self.objpoint:
-            q2.begin(self)
-            brush = QBrush(Qt.SolidPattern)
-            q2.setBrush(brush)
-            q2.drawEllipse(self.objpoint.QPoint(), 5, 5)
+    def noBorders(self):
+        return
 
     pressMethods = (waitForFinish, makeVertexStartRoad, allocate)
     moveMethods = (moveAndDraw, noChanges, noChanges)
-    drawMethods = (mouseTracePainter, nothingToAdd, drawAllocated)
+    drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
 
 
 if __name__ == '__main__':
