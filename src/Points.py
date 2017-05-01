@@ -46,6 +46,8 @@ class Vertex(Point):
 
     def getName(self):
         return self.name
+    def extract(self):
+        return (self.x(),self.y())
 
     c = ord('A')
     i = c

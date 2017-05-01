@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
-from drawer import Drawer
+from Slava import Slava
 
 class Example(QMainWindow):
     def __init__(self):
@@ -19,10 +19,11 @@ class Example(QMainWindow):
 
     def initUI(self):
 
-        self.widget = Drawer(self)
+        self.widget = Slava.CurveDrawer(self)
+        print(self.widget.vertices)
         self.setCentralWidget(self.widget)
 
-        col = QColor(255, 255, 255)
+        col = QColor(0, 0, 0)
 
         mydocwidget = QDockWidget('colour', self)
 
@@ -105,8 +106,6 @@ class Example(QMainWindow):
         else:
             event.ignore()
     def save(self):
-        pass
-
         fd = open('Saves.txt', 'w')
         verticeslist = self.widget.vertices
 
