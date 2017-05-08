@@ -65,7 +65,7 @@ class Controller:
         self.j = 0
         self.setRoadSchema()
         self.drawer.whatRoadToDraw = self.roadschema
-    
+
     def setTwoSided(self):
         self.j = 1
         self.setRoadSchema()
@@ -84,12 +84,12 @@ class Drawer(QWidget):
 
         self.setGeometry(200, 200, 1000, 500)
         self.setWindowTitle('Drawer')
-        self.btn1 = QPushButton('Переключение режимов', self)
-        self.btn1.resize(self.btn1.sizeHint())
-        self.btn1.clicked.connect(self.controller.switchByButton)
-        self.btn2 = QPushButton('Хаос', self)
-        self.btn2.resize(self.btn2.sizeHint())
-        self.btn2.clicked.connect(self.chaos)
+        #self.btn1 = QPushButton('Переключение режимов', self)
+        #self.btn1.resize(self.btn1.sizeHint())
+        #self.btn1.clicked.connect(self.controller.switchByButton)
+        #self.btn2 = QPushButton('Хаос', self)
+        #self.btn2.resize(self.btn2.sizeHint())
+        #self.btn2.clicked.connect(self.chaos)
         #self.btn3 = QPushButton('1', self)
         #self.btn3.resize(self.btn3.sizeHint())
         #self.btn3.clicked.connect(self.controller.switchRoadBuildingSchema)
@@ -120,6 +120,7 @@ class Drawer(QWidget):
             for cortege in rlist:
                 points.append(Point(cortege[0], cortege[1]))
             road.finish(endv, points)
+        self.update()
 
 
     def mousePressEvent(self, event):
