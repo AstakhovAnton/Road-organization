@@ -3,16 +3,10 @@ from Matrix import Network
 from Car import Car
 from Points import Point, Vertex, Road
 from Chaos import Chaos
-<<<<<<< HEAD
 from Stream import Stream
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-=======
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
-from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
-from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
->>>>>>> parent of 7b43b10... irrelevant
 
 
 class Communicate(QObject):
@@ -252,7 +246,6 @@ class Drawer(QWidget):
         return
 
     def twoSided(self, v):
-        print('lel')
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
@@ -331,7 +324,7 @@ class Drawer(QWidget):
         s = Stream(self, v1, v2, 10)
 
     def chaos(self):
-        self.controller.switchBehaviorToValue(3)
+        self.controller.switchBehaviorToValue(2)
         c = Chaos(self)
 
     def nothingToAdd(self):
@@ -357,7 +350,6 @@ class Drawer(QWidget):
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
     roadBuildingMethods = (oneSided, twoSided)
 
-<<<<<<< HEAD
 class MyThread(QThread):
     def __init__(self, drawer, v1, v2):
         QThread.__init__(self)
@@ -412,10 +404,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = AuxWidget(None)
     #ex = Drawer(None)
-=======
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Drawer(None)
->>>>>>> parent of 7b43b10... irrelevant
     sys.exit(app.exec_())
