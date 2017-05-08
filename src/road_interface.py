@@ -104,57 +104,46 @@ class Example(QMainWindow):
     def closeEvent(self, event):
 
         reply = QMessageBox.question(self, 'Message',
-                                         "Are you sure to quit?", QMessageBox.Yes |
+                                         "Save current file?", QMessageBox.Yes |
                                          QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
+            result = self.save()
+            if result == -1 :
+                event.ignore()
     def save(self):
 
+        fname = QFileDialog.getOpenFileName(self, 'save file', '/home')
+        if fname[0]:
+            fd = open(fname[0], 'w')
+            roads = self.widget.drawer.roads
+            vertices = self.widget.drawer.vertices
 
-        fd = open('Saves.txt', 'w')
-        roads = self.widget.roads
-        vertices = self.widget.vertices
+            for vertex in vertices:
+                cortege = vertex.extract()
 
-        for vertex in vertices:
-            cortege = vertex.extract()
-
-            fd.write(str(cortege) + ' ')
-        fd.write('\n')
-
-        for road in roads:
-            list = road.extract()
-
-            for cortege in list:
                 fd.write(str(cortege) + ' ')
             fd.write('\n')
-        fd.close()
+
+            for road in roads:
+                list = road.extract()
+
+                for cortege in list:
+                    fd.write(str(cortege) + ' ')
+                fd.write('\n')
+            fd.close()
+            return 0
+        else:
+            return -1
     def load(self):
-        fd = open('Saves.txt', 'r')
 
-        line = fd.readline()
-        vertices = []
-        roads = []
-        list1 = line.split()
-        list2 = []
+        fname = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+        if fname[0]:
+            fd = open(fname[0], 'r')
 
-        for element in list1:
-            element = element.replace('(', '')
-            element = element.replace(')', '')
-            element = element.replace(',', '')
-            element = element.replace(' ', '')
-            list2.append(int(element))
-
-
-        for i in range(len(list2)//2) :
-            vertices.append((list2[2*i], list2[2*i+1]))
-
-        road = []
-        line = fd.readline()
-        while line != '':
             line = fd.readline()
+            vertices = []
+            roads = []
             list1 = line.split()
             list2 = []
 
@@ -165,12 +154,30 @@ class Example(QMainWindow):
                 element = element.replace(' ', '')
                 list2.append(int(element))
 
-            for i in range(len(list2) // 2):
-                road.append((list2[2 * i], list2[2 * i + 1]))
-            roads.append(road)
 
-        fd.close()
-        self.widget.loadFromFile(vertices, roads)
+            for i in range(len(list2)//2) :
+                vertices.append((list2[2*i], list2[2*i+1]))
+
+            road = []
+            line = fd.readline()
+            while line != '':
+                line = fd.readline()
+                list1 = line.split()
+                list2 = []
+
+                for element in list1:
+                    element = element.replace('(', '')
+                    element = element.replace(')', '')
+                    element = element.replace(',', '')
+                    element = element.replace(' ', '')
+                    list2.append(int(element))
+
+                for i in range(len(list2) // 2):
+                    road.append((list2[2 * i], list2[2 * i + 1]))
+                roads.append(road)
+
+            fd.close()
+            self.widget.drawer.loadFromFile(vertices, roads)
 
     def showDialog(self):
         col = QColorDialog.getColor()
@@ -192,12 +199,17 @@ class MyWidget(QWidget) :
         self.btn2 = QPushButton('Хаос', self)
         self.btn2.resize(self.btn2.sizeHint())
         self.btn2.clicked.connect(self.drawer.chaos)
-        
+
+        self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
+        self.btn3.resize(self.btn3.sizeHint())
+        self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
 
         hbox = QHBoxLayout()
+        hbox.addWidget(self.btn3)
         hbox.addStretch(1)
         hbox.addWidget(self.btn1)
         hbox.addWidget(self.btn2)
+
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.drawer)
