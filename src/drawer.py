@@ -3,9 +3,11 @@ from Matrix import Network
 from Car import Car
 from Points import Point, Vertex, Road
 from Chaos import Chaos
+from Stream import Stream
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+
 
 class Communicate(QObject):
     switch = pyqtSignal()
@@ -56,6 +58,16 @@ class Controller:
 
     def switchRoadBuildingSchema(self):
         self.j = (self.j + 1) % 2
+        self.setRoadSchema()
+        self.drawer.whatRoadToDraw = self.roadschema
+
+    def setOneSided(self):
+        self.j = 0
+        self.setRoadSchema()
+        self.drawer.whatRoadToDraw = self.roadschema
+
+    def setTwoSided(self):
+        self.j = 1
         self.setRoadSchema()
         self.drawer.whatRoadToDraw = self.roadschema
 
@@ -248,7 +260,7 @@ class Drawer(QWidget):
     def waitForFinish(self, event):
         if event.button() == Qt.LeftButton:
             point = Point(event.x(), event.y())
-            if self.mindistance(point) > 15:
+            if self.mindistance(point) > 50:
                 self.pointList.append(point)
                 v = Vertex.newVertex(event.x(), event.y(), self.net)
                 self.vertices.append(v)
@@ -302,10 +314,14 @@ class Drawer(QWidget):
                 self.update()
 
     def move(self, v1, v2):
-        def behavior(v, drawer, v1, v2):
-            car = Car(v, drawer)
-            car.moveAtoB(drawer.net, v1, v2)
-        threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
+        #def behavior(v, drawer, v1, v2):
+        #    car = Car(v, drawer)
+        #    car.moveAtoB(drawer.net, v1, v2)
+        #threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
+
+        #newThread = MyThread(self, v1, v2)
+        #newThread.start()
+        s = Stream(self, v1, v2, 10)
 
     def chaos(self):
         self.controller.switchBehaviorToValue(2)
@@ -320,7 +336,8 @@ class Drawer(QWidget):
             q.begin(self)
             brush = QBrush(Qt.BDiagPattern)
             pen = QPen(Qt.black, 1, Qt.DashLine)
-            q.setBrush(brush)
+            if self.pos and Point.dist(Point(self.pos.x(), self.pos.y()), vertex) <= 50:
+                q.setBrush(brush)
             q.setPen(pen)
             q.drawEllipse(vertex.myQPoint(), 50, 50)
         q.end()
@@ -332,6 +349,22 @@ class Drawer(QWidget):
     moveMethods = (moveAndDraw, noChanges, noChanges)
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
     roadBuildingMethods = (oneSided, twoSided)
+
+class MyThread(QThread):
+    def __init__(self, drawer, v1, v2):
+        QThread.__init__(self)
+        self.drawer = drawer
+        self.v1 = v1
+        self.v2 = v2
+        self.v = 150
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+        car = Car(self.v, self.drawer)
+        car.moveAtoB(self.drawer.net, self.v1, self.v2)
+
 
 class AuxWidget(QWidget):
     def __init__(self, parent):
@@ -370,4 +403,5 @@ class AuxWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = AuxWidget(None)
+    #ex = Drawer(None)
     sys.exit(app.exec_())
