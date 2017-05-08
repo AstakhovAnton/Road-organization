@@ -7,6 +7,7 @@ from Stream import Stream
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import random
 
 
 class Communicate(QObject):
@@ -314,14 +315,14 @@ class Drawer(QWidget):
                 self.update()
 
     def move(self, v1, v2):
-        #def behavior(v, drawer, v1, v2):
-        #    car = Car(v, drawer)
-        #    car.moveAtoB(drawer.net, v1, v2)
-        #threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
+        def behavior(v, drawer, v1, v2):
+            car = Car(v, drawer)
+            car.moveAtoB(drawer.net, v1, v2)
+        threading.Thread(target = behavior, args = (random.randint(5, 25) * 10, self, v1, v2,)).start()
 
         #newThread = MyThread(self, v1, v2)
         #newThread.start()
-        s = Stream(self, v1, v2, 10)
+        #s = Stream(self, v1, v2, 10)
 
     def chaos(self):
         self.controller.switchBehaviorToValue(2)

@@ -52,22 +52,39 @@ class Car:
 
             if distance <= i + accel - 1:
                 self.current_velocity = math.sqrt(self.velocity ** 2 - (accel - distance + i + 1)/accel * (self.velocity ** 2 - vmin ** 2))
-
-
             time.sleep(1/self.current_velocity)
+
+            no_wait = 0
             if distance > i + 10:
                 while net.matrix[self.current_vertex][where][best_road]['on_road'][i + 10] == 1:
                     time.sleep(1/inf)
+            else:
+                while no_wait == 0:
+                    no_wait = 1
+                    for close in nx.neighbors(net.matrix, where):
+                        for road in net.matrix[where][close].keys():
+                            num = 0
+                            for point in net.matrix[where][close][road]['on_road']:
+                                if num > 10 - distance + i:
+                                    break
+                                num += 1
+                                if point == 1:
+                                    no_wait *= 0
+                    time.sleep(1/inf)
+
+
+           # print(i, self.velocity)
+
+            net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 1
             if i > 0:
                      net.matrix[self.current_vertex][where][best_road]['on_road'][i - 1] = 0
-            net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 1
             self.current_point = net.matrix[self.current_vertex][where][best_road]['dots'][i]
             point = Point(self.current_point[0], self.current_point[1])
             self.tracker.setPos(point)
             self.drawer.update()
             QApplication.processEvents()
 
-        net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 0
+        net.matrix[self.current_vertex][where][best_road]['on_road'][distance - 1] = 0
         self.current_vertex = where
         self.movement(net)
 
