@@ -3,9 +3,9 @@ from Matrix import Network
 from Car import Car
 from Points import Point, Vertex, Road
 from Chaos import Chaos
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton
-from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QBrush, QFont
-from PyQt5.QtCore import QObject, Qt, QPoint, QRect, pyqtSignal
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 class Communicate(QObject):
     switch = pyqtSignal()
@@ -234,7 +234,6 @@ class Drawer(QWidget):
         return
 
     def twoSided(self, v):
-        print('lel')
         begv = self.newroad.vertex1
         points2 = self.pointList.copy()
         points2.reverse()
@@ -309,7 +308,7 @@ class Drawer(QWidget):
         threading.Thread(target = behavior, args = (150, self, v1, v2,)).start()
 
     def chaos(self):
-        self.controller.switchBehaviorToValue(3)
+        self.controller.switchBehaviorToValue(2)
         c = Chaos(self)
 
     def nothingToAdd(self):
@@ -334,8 +333,41 @@ class Drawer(QWidget):
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
     roadBuildingMethods = (oneSided, twoSided)
 
+class AuxWidget(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(200, 200, 1000, 500)
+        self.setWindowTitle('Drawer')
+        self.show()
+
+        self.drawer = Drawer(self)
+
+        self.btn1 = QPushButton('Переключение режимов', self)
+        self.btn1.resize(self.btn1.sizeHint())
+        self.btn1.clicked.connect(self.drawer.controller.switchByButton)
+        self.btn2 = QPushButton('Хаос', self)
+        self.btn2.resize(self.btn2.sizeHint())
+        self.btn2.clicked.connect(self.drawer.chaos)
+        self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
+        self.btn3.resize(self.btn3.sizeHint())
+        self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.btn3)
+        hbox.addStretch(1)
+        hbox.addWidget(self.btn1)
+        hbox.addWidget(self.btn2)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.drawer)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Drawer(None)
+    ex = AuxWidget(None)
     sys.exit(app.exec_())
