@@ -40,7 +40,9 @@ class Example(QMainWindow):
                                     % col.name())
 
 
-        exitAction = QAction(QIcon('../resources/exit2.png'), 'Exit', self)
+
+
+        exitAction = QAction( QIcon('../resources/exit2.png'),'Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
@@ -187,6 +189,8 @@ class Example(QMainWindow):
                                     % col.name())
 
 class MyWidget(QWidget) :
+
+
     def __init__(self, parent):
         super().__init__(parent)
         self.initUI()
@@ -200,12 +204,28 @@ class MyWidget(QWidget) :
         self.btn2.resize(self.btn2.sizeHint())
         self.btn2.clicked.connect(self.drawer.chaos)
 
-        self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
-        self.btn3.resize(self.btn3.sizeHint())
-        self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
+        #   self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
+        #  self.btn3.resize(self.btn3.sizeHint())
+        # self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
+
+        oneSided = QAction('OneSided road', self)
+        oneSided.triggered.connect(self.drawer.controller.setOneSided)
+
+        twoSided = QAction('TwoSided road', self)
+        twoSided.triggered.connect(self.drawer.controller.setTwoSided)
+
+        self.listofactions = []
+        self.listofactions.append(oneSided)
+        self.listofactions.append(twoSided)
+
+        btn3 = QComboBox(self)
+        btn3.addItem('TwoSided road')
+        btn3.addItem('OneSided road')
+
+        btn3.activated[str].connect(self.chooseRoadSchema)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(self.btn3)
+        hbox.addWidget(btn3)
         hbox.addStretch(1)
         hbox.addWidget(self.btn1)
         hbox.addWidget(self.btn2)
@@ -217,6 +237,12 @@ class MyWidget(QWidget) :
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
+    def chooseRoadSchema(self, str):
+        for action in self.listofactions :
+            if action.text() == str :
+                action.trigger()
+                break
+
 
 if __name__ == '__main__':
 
