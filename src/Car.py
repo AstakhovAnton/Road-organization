@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QObject, Qt, QPoint
 import math
 inf = 10 ** 6
+waiting = 1000
 
 class Car:
     def __init__(self, v, drawer):
@@ -39,7 +40,7 @@ class Car:
                 best_len = net.matrix[self.current_vertex][where][road]['weight']
                 best_road = road
 
-        vmin = 5
+        vmin = 2
         distance = len(net.matrix[self.current_vertex][where][best_road]['dots'])
         for i in range(distance):
             if distance < 200:
@@ -52,12 +53,13 @@ class Car:
 
             if distance <= i + accel - 1:
                 self.current_velocity = math.sqrt(self.velocity ** 2 - (accel - distance + i + 1)/accel * (self.velocity ** 2 - vmin ** 2))
-            time.sleep(1/self.current_velocity)
+            if i != 0:
+                time.sleep(1/self.current_velocity)
 
             no_wait = 0
             if distance > i + 10:
                 while net.matrix[self.current_vertex][where][best_road]['on_road'][i + 10] == 1:
-                    time.sleep(1/inf)
+                    time.sleep(1/waiting)
             else:
                 while no_wait == 0:
                     no_wait = 1
@@ -65,15 +67,16 @@ class Car:
                         for road in net.matrix[where][close].keys():
                             num = 0
                             for point in net.matrix[where][close][road]['on_road']:
-                                if num > 10 - distance + i:
+                                if num > 10 - distance + 1 + i:
                                     break
                                 num += 1
                                 if point == 1:
                                     no_wait *= 0
-                    time.sleep(1/inf)
+                    if no_wait == 0:
+                        time.sleep(1/waiting)
 
-
-           # print(i, self.velocity)
+            #if i < 35 or i > 400:
+            #    print(i, self.velocity)
 
             net.matrix[self.current_vertex][where][best_road]['on_road'][i] = 1
             if i > 0:

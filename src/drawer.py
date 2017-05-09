@@ -318,7 +318,7 @@ class Drawer(QWidget):
         def behavior(v, drawer, v1, v2):
             car = Car(v, drawer)
             car.moveAtoB(drawer.net, v1, v2)
-        threading.Thread(target = behavior, args = (random.randint(5, 25) * 10, self, v1, v2,)).start()
+        threading.Thread(target = behavior, args = (random.randint(7, 15) * 10, self, v1, v2,)).start()
 
         #newThread = MyThread(self, v1, v2)
         #newThread.start()
