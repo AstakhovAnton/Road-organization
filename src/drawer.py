@@ -7,7 +7,6 @@ from Stream import Stream
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import random
 
 
 class Communicate(QObject):
@@ -46,13 +45,13 @@ class Controller:
             self.i = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-        self.drawer.update()
+        #self.drawer.update()
 
     def switchBehaviorToValue(self, i):
         self.i = i
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-        self.drawer.update()
+        #self.drawer.update()
 
     def setRoadSchema(self):
         self.roadschema = Drawer.roadBuildingMethods[self.j]
@@ -85,15 +84,6 @@ class Drawer(QWidget):
 
         self.setGeometry(200, 200, 1000, 500)
         self.setWindowTitle('Drawer')
-        #self.btn1 = QPushButton('Переключение режимов', self)
-        #self.btn1.resize(self.btn1.sizeHint())
-        #self.btn1.clicked.connect(self.controller.switchByButton)
-        #self.btn2 = QPushButton('Хаос', self)
-        #self.btn2.resize(self.btn2.sizeHint())
-        #self.btn2.clicked.connect(self.chaos)
-        #self.btn3 = QPushButton('1', self)
-        #self.btn3.resize(self.btn3.sizeHint())
-        #self.btn3.clicked.connect(self.controller.switchRoadBuildingSchema)
         self.vertices = []
         self.roads = []
         self.pointList = []
@@ -102,6 +92,9 @@ class Drawer(QWidget):
         self.count = 0
         self.pos = None
         self.hasBegun = False
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(1)
         self.net = Network()
 
     def loadFromFile(self, verticeslist, roadlists):
@@ -109,19 +102,26 @@ class Drawer(QWidget):
         self.roads = []
         for vcortege in verticeslist:
             self.vertices.append(Vertex.newVertex(vcortege[0], vcortege[1], self.net))
+        i = 0
         for rlist in roadlists:
             for vertex in self.vertices:
                 if vertex.x() == rlist[0][0] and vertex.y() == rlist[0][1]:
                     begv = vertex
+                    break
             road = Road(begv, self.net)
             for vertex in self.vertices:
                 if vertex.x() == rlist[-1][0] and vertex.y() == rlist[-1][1]:
                     endv = vertex
+                    break
             points = []
             for cortege in rlist:
                 points.append(Point(cortege[0], cortege[1]))
             road.finish(endv, points)
-        self.update()
+            if i % 2 == 1:
+                road.isPrintable = False
+            i += 1
+            self.roads.append(road)
+        #self.update()
 
 
     def mousePressEvent(self, event):
@@ -214,7 +214,7 @@ class Drawer(QWidget):
                     point = Point(self.basepoint.x() + round(cos*i), self.basepoint.y() + round(sin*i))
             self.pointList.append(point)
             self.basepoint = point
-            self.update()
+            #self.update()
 
         if self.mindistance(point) <= 7 and len(self.pointList) >= 20:
             v = self.closestvertex(point)
@@ -238,7 +238,7 @@ class Drawer(QWidget):
         road1.finish(v, points1)
         self.roads.append(road1)
         self.whatRoadToDraw(self, v)
-        self.update()
+        #self.update()
         self.pointList.clear()
         self.signal.switch.emit()
         self.pos = None
@@ -265,7 +265,7 @@ class Drawer(QWidget):
                 self.pointList.append(point)
                 v = Vertex.newVertex(event.x(), event.y(), self.net)
                 self.vertices.append(v)
-                self.update()
+                #self.update()
                 self.finishTheRoad(v)
 
 
@@ -274,7 +274,7 @@ class Drawer(QWidget):
             point = Point(event.x(), event.y())
             if not self.vertices or self.mindistance(point) > 50:
                 self.vertices.append(Vertex.newVertex(event.x(), event.y(), self.net))
-                self.update()
+                #self.update()
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
             v = self.closestvertex(point)
@@ -306,23 +306,16 @@ class Drawer(QWidget):
             else:
                 self.v2 = self.closestvertex(point)
                 self.v2.setEnd()
-            self.update()
+            #self.update()
             self.count += 1
             if self.count == 2:
                 self.move(self.v1, self.v2)
                 self.count = 0
                 self.hasBegun = False
-                self.update()
+                #self.update()
 
     def move(self, v1, v2):
-        def behavior(v, drawer, v1, v2):
-            car = Car(v, drawer)
-            car.moveAtoB(drawer.net, v1, v2)
-        threading.Thread(target = behavior, args = (random.randint(7, 15) * 10, self, v1, v2,)).start()
-
-        #newThread = MyThread(self, v1, v2)
-        #newThread.start()
-        #s = Stream(self, v1, v2, 10)
+        s = Stream(self, v1, v2, 10)
 
     def chaos(self):
         self.controller.switchBehaviorToValue(2)
@@ -404,5 +397,4 @@ class AuxWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = AuxWidget(None)
-    #ex = Drawer(None)
     sys.exit(app.exec_())

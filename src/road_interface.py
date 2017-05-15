@@ -160,10 +160,9 @@ class Example(QMainWindow):
             for i in range(len(list2)//2) :
                 vertices.append((list2[2*i], list2[2*i+1]))
 
-            road = []
             line = fd.readline()
             while line != '':
-                line = fd.readline()
+                road = []
                 list1 = line.split()
                 list2 = []
 
@@ -177,9 +176,10 @@ class Example(QMainWindow):
                 for i in range(len(list2) // 2):
                     road.append((list2[2 * i], list2[2 * i + 1]))
                 roads.append(road)
-
-            fd.close()
+                line = fd.readline()
             self.widget.drawer.loadFromFile(vertices, roads)
+            fd.close()
+
 
     def showDialog(self):
         col = QColorDialog.getColor()
