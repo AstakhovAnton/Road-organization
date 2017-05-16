@@ -53,6 +53,16 @@ class Controller:
         self.setDrawerSchema(self.schema)
         #self.drawer.update()
 
+    def switchBehaviorToDrawing(self):
+        self.i = 0
+        self.setControllerSchema()
+        self.setDrawerSchema(self.schema)
+
+    def switchBehaviorToMovement(self):
+        self.i = 2
+        self.setControllerSchema()
+        self.setDrawerSchema(self.schema)
+
     def setRoadSchema(self):
         self.roadschema = Drawer.roadBuildingMethods[self.j]
 
