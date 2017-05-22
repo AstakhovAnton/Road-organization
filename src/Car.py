@@ -15,7 +15,11 @@ class Car:
         self.current_velocity = 5
 
     def way(self, net, whence):
-        return (nx.dijkstra_path(net.matrix, whence, self.finish_vertex))[1]
+        try:
+            result = (nx.dijkstra_path(net.matrix, whence, self.finish_vertex))[1]
+        except nx.exception.NetworkXNoPath:
+            result = None
+        return result
 
     def moveAtoB(self, net, start, finish):
         self.current_vertex = start.name
@@ -34,6 +38,8 @@ class Car:
 
         if self.current_vertex == self.start_vertex: ## if starts, where
             self.where = self.way(net, self.start_vertex)
+            if self.where == None:
+                return
             best_len = inf
             self.best_road = 0
             for road in net.matrix[self.current_vertex][self.where].keys():
