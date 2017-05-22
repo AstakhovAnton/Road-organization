@@ -35,7 +35,7 @@ def lower(p1, p2, p3):
 def sidecurve(points, l):
     points1 = []
     points2 = []
-    n = 17
+    n = 10
     for i in range(n, len(points) - n):
         if onLine(points[i - n], points[i], points[i + n]) == False:
             p = center(points[i - n], points[i], points[i + n])

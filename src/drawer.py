@@ -158,22 +158,23 @@ class Drawer(QWidget):
         for vertex in self.vertices:
             q2.begin(self)
             brush = QBrush(Qt.white, Qt.SolidPattern)
-            pen = QPen(Qt.black, 3, Qt.DotLine)
+            pen = QPen(Qt.black, 3, Qt.DashLine)
             q2.setBrush(brush)
-            q2.drawEllipse(vertex.myQPoint(), 75, 75)
+            q2.setPen(pen)
+            q2.drawEllipse(vertex.myQPoint(), 50, 50)
             q2.setFont(QFont('Decorative', 10))
             q2.drawText(vertex.x() + 20, vertex.y() + 20, 30, 20, 0, vertex.name)
         for vertex in self.vertices:
             if vertex.isBeginning:
                 q3.begin(self)
-                pen = QPen(Qt.blue, 3, Qt.DashLine)
+                pen = QPen(Qt.blue, 2, Qt.DashLine)
                 q3.setPen(pen)
-                q3.drawEllipse(vertex.myQPoint(), 11, 11)
+                q3.drawEllipse(vertex.myQPoint(), 50 , 50)
             if vertex.isEnd:
                 q3.begin(self)
                 pen = QPen(Qt.red, 2, Qt.DashLine)
                 q3.setPen(pen)
-                q3.drawEllipse(vertex.myQPoint(), 10, 10)
+                q3.drawEllipse(vertex.myQPoint(), 50, 50)
         q1.end()
         q2.end()
         q3.end()
@@ -235,9 +236,6 @@ class Drawer(QWidget):
         points = self.pointList.copy()
         road = self.newroad
         road.found(points, v)
-        print(road.vertex1, road.vertex2)
-        for tr in road.trajectories:
-            print(tr.points[0], tr.points[-1])
         self.roads.append(road)
         self.pointList.clear()
         self.signal.switch.emit()
@@ -286,7 +284,7 @@ class Drawer(QWidget):
 
     def allocate(self, event):
         point = Point(event.x(), event.y())
-        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
+        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 20:
             if self.hasBegun == False:
                 self.v1 = self.closestvertex(point)
                 self.v1.setBeginning()
