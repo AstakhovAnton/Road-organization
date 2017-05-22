@@ -65,8 +65,8 @@ class Road:
                         pointsList[i].insert(len(pointsList[i]), self.vertex2)
                         pointsList[i+1].insert(0, self.vertex1)
                         pointsList[i+1].insert(len(pointsList[i+1]), self.vertex2)
-                        trajlist.append(Trajectory(pointsList[i], True))
-                        trajlist.append(Trajectory(pointsList[i + 1], False))
+                        trajlist.append(Trajectory(pointsList[i], False))
+                        trajlist.append(Trajectory(pointsList[i + 1], True))
                     else:
                         borderlist.append(LaneBorder(pointsList[i]))
                         borderlist.append(LaneBorder(pointsList[i + 1]))
@@ -79,6 +79,7 @@ class Road:
         if self.ready == False:
             self.length = length
             self.borders = borderslist
+            trajlist.reverse()
             self.trajectories = trajlist
             for trajectory in self.trajectories:
                 if trajectory.isStraight:

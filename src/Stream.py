@@ -13,12 +13,12 @@ class Stream:
 
     def beginStream(self):
         def behavior(startV, endV, drawer, i, probability):
-            time.sleep(i/probability)
+            time.sleep(3*i/probability)
             velocity = 200
             #velocity = random.randint(5,15)*20
 
             car = Car(velocity,drawer)
             car.moveAtoB(drawer.net,startV,endV)
 
-        for i in range(120):
+        for i in range(30):
             threading.Thread(target=behavior, args=(self.startV, self.endV, self.drawer, i, self.probability)).start()
