@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QObject, Qt, QPoint
 import math
 inf = 10 ** 6
-waiting = 1000
+waiting = 300
 
 class Car:
     def __init__(self, v, drawer):
@@ -42,19 +42,19 @@ class Car:
                     self.best_road = road
 
         vmin = 2
-        future_best_road = 0
-        future_where = self.where
+        self.future_best_road = 0
+        self.future_where = self.where
         distance = len(net.matrix[self.current_vertex][self.where][self.best_road]['dots']) ## traffic
         for i in range(distance):
 
-            if self.where != self.finish_vertex and distance == i + 9: ## where
-                future_where = self.way(net, self.where)
+            if self.where != self.finish_vertex and distance == i + 30: ## where
+                self.future_where = self.way(net, self.where)
                 best_len = inf
-                future_best_road = 0
-                for road in net.matrix[self.where][future_where].keys():
-                    if net.matrix[self.where][future_where][road]['weight'] < best_len:
-                        best_len = net.matrix[self.where][future_where][road]['weight']
-                        future_best_road = road
+                self.future_best_road = 0
+                for road in net.matrix[self.where][self.future_where].keys():
+                    if net.matrix[self.where][self.future_where][road]['weight'] < best_len:
+                        best_len = net.matrix[self.where][self.future_where][road]['weight']
+                        self.future_best_road = road
 
             if distance < 200: ## to determine velocity
                 accel = distance / 2
@@ -73,12 +73,26 @@ class Car:
 
             no_wait = 0 ## when may go
             if distance > i + 10:
-                while net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i + 10] == 1:
+                while net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i + 10] != 0:
                     time.sleep(1/waiting)
             else:
                 while no_wait == 0:
                     no_wait = 1
 
+                    for vertex_predecessors in net.matrix.predecessors(self.where):
+                        for road in net.matrix[vertex_predecessors][self.where].keys():
+                            if vertex_predecessors != self.current_vertex or road != self.best_road: ## vertex_predecessors
+                                first_angle = net.matrix[self.where][self.future_where][self.future_best_road]['start_angle'] ## edge
+                                second_angle = net.matrix[self.current_vertex][self.where][self.best_road]['finish_angle']    ## edge
+                                other_angle = net.matrix[vertex_predecessors][self.where][road]['finish_angle']
+                                len_road = len(net.matrix[vertex_predecessors][self.where][road]['on_road'])
+                                if second_angle < first_angle and second_angle < other_angle and other_angle < first_angle\
+                                        or second_angle < other_angle and second_angle > first_angle\
+                                        or second_angle > first_angle and second_angle > other_angle and first_angle > other_angle:
+                                        for j in range(len_road - 30, len_road):
+                                            if net.matrix[vertex_predecessors][self.where][road]['on_road'][j] != 0:
+                                                if net.matrix[vertex_predecessors][self.where][road]['on_road'][j].future_best_road == self.future_best_road:
+                                                    no_wait *= 0
 
 
                     for close in nx.neighbors(net.matrix, self.where): ##do not merge
@@ -98,7 +112,7 @@ class Car:
             #if i < 35 or i > 400:
             #    print(i, self.velocity)
 
-            net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i] = 1 ## car on road
+            net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i] = self ## car on road
             if i > 0:
                      net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i - 1] = 0
 
@@ -108,7 +122,7 @@ class Car:
 
         net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][distance - 1] = 0
         self.current_vertex = self.where
-        self.where = future_where
-        self.best_road = future_best_road
+        self.where = self.future_where
+        self.best_road = self.future_best_road
         self.movement(net)
 

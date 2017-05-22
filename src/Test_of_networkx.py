@@ -4,18 +4,16 @@ g = nx.MultiDiGraph()
 n = 5
 for i in range(n):
     g.add_node(i)
-for i in range(15 * n):
+for i in range(2 * n):
     a = random.randint(0, n - 1)
     b = random.randint(0, n - 1)
-    g.add_edge(a, b, weight=random.randint(1, 10), name = ((1, 2), (1, 2)))
-print(g[0][1])
-min = 100
-mykey = -1
-for i in g[0][1].keys():
-    if g[0][1][i]['weight'] < min:
-        min = g[0][1][i]['weight']
-        mykey = i
-print(i)
+    g.add_edge(a, b, weight=random.randint(1, 10))
+
+
+#print(g.edges())
+#print(g.predecessors(1))
+#print(nx.neighbors(g, 1))
+
 
 
 
