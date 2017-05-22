@@ -54,7 +54,7 @@ class Controller:
         #self.drawer.update()
 
     def switchBehaviorToDrawing(self):
-        self.i = 0
+        self.i = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
 
@@ -104,7 +104,7 @@ class Drawer(QWidget):
         self.hasBegun = False
         self.timer = QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(1)
+        self.timer.start(20)
         self.net = Network()
 
     def loadFromFile(self, verticeslist, roadlists):
@@ -211,15 +211,16 @@ class Drawer(QWidget):
             return None
 
     def moveAndDraw(self, event):
+        m = 5
         point = Point(event.x(), event.y())
         distance_from_previous_point = Point.dist(point, self.basepoint)
         self.pos = event.pos()
-        if distance_from_previous_point >= 1:
-            if distance_from_previous_point >= 2:
+        if distance_from_previous_point >= m:
+            if distance_from_previous_point >= 2*m:
                 cos = (point.x() - self.basepoint.x()) / distance_from_previous_point
                 sin = (point.y() - self.basepoint.y()) / distance_from_previous_point
                 point = Point(self.basepoint.x() + round(cos), self.basepoint.y() + round(sin))
-                for i in range(1, math.ceil(distance_from_previous_point)):
+                for i in range(m, math.ceil(distance_from_previous_point), m):
                     self.pointList.append(point)
                     point = Point(self.basepoint.x() + round(cos*i), self.basepoint.y() + round(sin*i))
             self.pointList.append(point)
@@ -344,7 +345,7 @@ class Drawer(QWidget):
                 q.setBrush(brush)
             q.setPen(pen)
             q.drawEllipse(vertex.myQPoint(), 50, 50)
-        q.end()
+            q.end()
 
     def noBorders(self):
         return
