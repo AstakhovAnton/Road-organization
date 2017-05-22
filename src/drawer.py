@@ -1,7 +1,8 @@
 import sys, time, math, threading
 from Matrix import Network
 from Car import Car
-from Points import Point, Vertex, Road
+from Points import Point, Vertex
+from Road import Road
 from Chaos import Chaos
 from Stream import Stream
 from PyQt5.QtWidgets import *
@@ -16,14 +17,11 @@ class Controller:
     def __init__(self, drawer):
         self.drawer = drawer
         self.i = 1
-        self.j = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-        self.drawer.whatRoadToDraw = self.roadschema
 
     def setControllerSchema(self):
         self.schema = (Drawer.pressMethods[self.i], Drawer.moveMethods[self.i], Drawer.drawMethods[self.i])
-        self.roadschema = Drawer.roadBuildingMethods[self.j]
 
     def setDrawerSchema(self, schema):
         self.drawer.customMousePressEvent = schema[0]
@@ -63,23 +61,11 @@ class Controller:
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
 
-    def setRoadSchema(self):
-        self.roadschema = Drawer.roadBuildingMethods[self.j]
-
-    def switchRoadBuildingSchema(self):
-        self.j = (self.j + 1) % 2
-        self.setRoadSchema()
-        self.drawer.whatRoadToDraw = self.roadschema
-
     def setOneSided(self):
-        self.j = 0
-        self.setRoadSchema()
-        self.drawer.whatRoadToDraw = self.roadschema
+        self.drawer.isOneSided = True
 
     def setTwoSided(self):
-        self.j = 1
-        self.setRoadSchema()
-        self.drawer.whatRoadToDraw = self.roadschema
+        self.drawer.isOneSided = False
 
 class Drawer(QWidget):
     def __init__(self, parent):
@@ -106,8 +92,11 @@ class Drawer(QWidget):
         self.timer.timeout.connect(self.update)
         self.timer.start(20)
         self.net = Network()
+        self.n = 2
+        self.isOneSided = False
 
     def loadFromFile(self, verticeslist, roadlists):
+        pass
         self.vertices = []
         self.roads = []
         for vcortege in verticeslist:
@@ -153,20 +142,27 @@ class Drawer(QWidget):
         q1 = QPainter()
         q2 = QPainter()
         for road in self.roads:
-            if road.isPrintable:
-                q1.begin(self)
-                pen = QPen(Qt.black, 3, Qt.DashLine)
-                q1.setPen(pen)
-                if road.ready:
-                    q1.drawPolyline(road.polygonize())
+            if road.ready:
+                road.draw(self, q1)
+
+        q3 = QPainter()
+
+        q4 = QPainter()
+        for tracker in self.carList:
+            if tracker.pos:
+                q4.begin(self)
+                brush = QBrush(Qt.SolidPattern)
+                q4.setBrush(brush)
+                q4.drawEllipse(tracker.pos.myQPoint(), 5, 5)
+
         for vertex in self.vertices:
             q2.begin(self)
-            brush = QBrush(Qt.SolidPattern)
+            brush = QBrush(Qt.white, Qt.SolidPattern)
+            pen = QPen(Qt.black, 3, Qt.DotLine)
             q2.setBrush(brush)
-            q2.drawEllipse(vertex.myQPoint(), 7, 7)
+            q2.drawEllipse(vertex.myQPoint(), 75, 75)
             q2.setFont(QFont('Decorative', 10))
-            q2.drawText(vertex.x() + 7, vertex.y() + 7, 30, 20, 0, vertex.name)
-        q3 = QPainter()
+            q2.drawText(vertex.x() + 20, vertex.y() + 20, 30, 20, 0, vertex.name)
         for vertex in self.vertices:
             if vertex.isBeginning:
                 q3.begin(self)
@@ -178,13 +174,6 @@ class Drawer(QWidget):
                 pen = QPen(Qt.red, 2, Qt.DashLine)
                 q3.setPen(pen)
                 q3.drawEllipse(vertex.myQPoint(), 10, 10)
-        q4 = QPainter()
-        for tracker in self.carList:
-            if tracker.pos:
-                q4.begin(self)
-                brush = QBrush(Qt.SolidPattern)
-                q4.setBrush(brush)
-                q4.drawEllipse(tracker.pos.myQPoint(), 5, 5)
         q1.end()
         q2.end()
         q3.end()
@@ -211,7 +200,7 @@ class Drawer(QWidget):
             return None
 
     def moveAndDraw(self, event):
-        m = 5
+        m = 1
         point = Point(event.x(), event.y())
         distance_from_previous_point = Point.dist(point, self.basepoint)
         self.pos = event.pos()
@@ -225,9 +214,8 @@ class Drawer(QWidget):
                     point = Point(self.basepoint.x() + round(cos*i), self.basepoint.y() + round(sin*i))
             self.pointList.append(point)
             self.basepoint = point
-            #self.update()
 
-        if self.mindistance(point) <= 7 and len(self.pointList) >= 20:
+        if self.mindistance(point) <= 20 and len(self.pointList) >= 50:
             v = self.closestvertex(point)
             self.pointList.append(Point(v.x(), v.y()))
             self.finishTheRoad(v)
@@ -244,27 +232,17 @@ class Drawer(QWidget):
             d = Point.dist(self.previous(point), point)
             if d == 0.0:
                 self.pointList.remove(point)
-        points1 = self.pointList.copy()
-        road1 = self.newroad
-        road1.finish(v, points1)
-        self.roads.append(road1)
-        self.whatRoadToDraw(self, v)
-        #self.update()
+        points = self.pointList.copy()
+        road = self.newroad
+        road.found(points, v)
+        print(road.vertex1, road.vertex2)
+        for tr in road.trajectories:
+            print(tr.points[0], tr.points[-1])
+        self.roads.append(road)
         self.pointList.clear()
         self.signal.switch.emit()
         self.pos = None
 
-    def oneSided(self, v):
-        return
-
-    def twoSided(self, v):
-        begv = self.newroad.vertex1
-        points2 = self.pointList.copy()
-        points2.reverse()
-        road2 = Road(v, self.net)
-        road2.isPrintable = False
-        road2.finish(begv, points2)
-        self.roads.append(road2)
 
     def noChanges(self, event):
         QWidget.mouseMoveEvent(self, event)
@@ -272,11 +250,10 @@ class Drawer(QWidget):
     def waitForFinish(self, event):
         if event.button() == Qt.LeftButton:
             point = Point(event.x(), event.y())
-            if self.mindistance(point) > 50:
+            if self.mindistance(point) > 100:
                 self.pointList.append(point)
                 v = Vertex.newVertex(event.x(), event.y(), self.net)
                 self.vertices.append(v)
-                #self.update()
                 self.finishTheRoad(v)
 
 
@@ -287,9 +264,9 @@ class Drawer(QWidget):
                 self.vertices.append(Vertex.newVertex(event.x(), event.y(), self.net))
                 #self.update()
         point = Point(event.x(), event.y())
-        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 8:
+        if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 20:
             v = self.closestvertex(point)
-            self.newroad = Road(v, self.net)
+            self.newroad = Road(v, self.net, self.n, self.isOneSided)
             self.basepoint = Point(v.x(), v.y())
             self.pointList.append(self.basepoint)
             self.signal.switch.emit()
@@ -341,10 +318,10 @@ class Drawer(QWidget):
             q.begin(self)
             brush = QBrush(Qt.BDiagPattern)
             pen = QPen(Qt.black, 1, Qt.DashLine)
-            if self.pos and Point.dist(Point(self.pos.x(), self.pos.y()), vertex) <= 50:
+            if self.pos and Point.dist(Point(self.pos.x(), self.pos.y()), vertex) <= 100:
                 q.setBrush(brush)
             q.setPen(pen)
-            q.drawEllipse(vertex.myQPoint(), 50, 50)
+            q.drawEllipse(vertex.myQPoint(), 100, 100)
             q.end()
 
     def noBorders(self):
@@ -353,23 +330,6 @@ class Drawer(QWidget):
     pressMethods = (waitForFinish, makeVertexStartRoad, allocate)
     moveMethods = (moveAndDraw, noChanges, noChanges)
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
-    roadBuildingMethods = (oneSided, twoSided)
-
-class MyThread(QThread):
-    def __init__(self, drawer, v1, v2):
-        QThread.__init__(self)
-        self.drawer = drawer
-        self.v1 = v1
-        self.v2 = v2
-        self.v = 150
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        car = Car(self.v, self.drawer)
-        car.moveAtoB(self.drawer.net, self.v1, self.v2)
-
 
 class AuxWidget(QWidget):
     def __init__(self, parent):

@@ -23,12 +23,13 @@ class Road:
             if self.isOneSided:
                 if self.n % 2 == 0:
                     pointsList = functions.multiplecurves(points, self.n, 10)
-                    for sublist in pointList:
-                        sublist.insert(0, self.vertex1)
-                        sublist.insert(len(sublist), self.vertex2)
                     borderlist.append(LaneBorder(points))
                     for i in range(0, len(pointsList) - 2, 2):
                         if i % 4 == 0:
+                            pointsList[i].insert(0, self.vertex1)
+                            pointsList[i].insert(len(pointsList[i + 1]), self.vertex2)
+                            pointsList[i + 1].insert(0, self.vertex1)
+                            pointsList[i + 1].insert(len(pointsList[i + 1]), self.vertex2)
                             trajlist.append(Trajectory(pointsList[i], True))
                             trajlist.append(Trajectory(pointsList[i + 1], True))
                         else:
@@ -38,15 +39,16 @@ class Road:
                     borderlist.append(SideBorder(pointsList[-1]))
                 else:
                     pointsList = functions.multiplecurves(points, self.n, 10)
-                    for sublist in pointList:
-                        sublist.insert(0, self.vertex1)
-                        sublist.insert(len(sublist), self.vertex2)
                     trajlist.append(Trajectory(points, True))
                     for i in range(0, len(pointsList) - 2, 2):
                         if i % 4 == 0:
                             borderlist.append(LaneBorder(pointsList[i]))
                             borderlist.append(LaneBorder(pointsList[i + 1]))
                         else:
+                            pointsList[i].insert(0, self.vertex1)
+                            pointsList[i].insert(len(pointsList[i + 1]), self.vertex2)
+                            pointsList[i + 1].insert(0, self.vertex1)
+                            pointsList[i + 1].insert(len(pointsList[i + 1]), self.vertex2)
                             trajlist.append(Trajectory(pointsList[i], True))
                             trajlist.append(Trajectory(pointsList[i + 1], True))
                     borderlist.append(SideBorder(pointsList[-2]))
@@ -54,13 +56,17 @@ class Road:
             else:
                 borderlist.append(DoubleSolid(points))
                 pointsList = functions.multiplecurves(points, 2*self.n, 10)
-                for sublist in pointList:
-                    sublist.insert(0, self.vertex1)
-                    sublist.insert(len(sublist), self.vertex2)
+                #for sublist in pointsList:
+                 #   sublist.insert(0, self.vertex1)
+                 #   sublist.insert(len(sublist), self.vertex2)
                 for i in range(0, len(pointsList) - 2, 2):
                     if i % 4 == 0:
+                        pointsList[i].insert(0, self.vertex1)
+                        pointsList[i].insert(len(pointsList[i]), self.vertex2)
+                        pointsList[i+1].insert(0, self.vertex1)
+                        pointsList[i+1].insert(len(pointsList[i+1]), self.vertex2)
                         trajlist.append(Trajectory(pointsList[i], True))
-                        trajlist.append(Trajectory(pointsList[i + 1], True))
+                        trajlist.append(Trajectory(pointsList[i + 1], False))
                     else:
                         borderlist.append(LaneBorder(pointsList[i]))
                         borderlist.append(LaneBorder(pointsList[i + 1]))

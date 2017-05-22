@@ -22,7 +22,7 @@ class Chaos :
             nodes = self.net.matrix.nodes().copy()
             nodes.remove(startVN)
             endVN = random.choice(self.net.matrix.nodes())
-            velocity = random.randint(5,15)*40
+            velocity = random.randint(5,15)*20
             for vert in drawer.vertices :
                 if vert.name == startVN:
                     startV = vert
@@ -34,7 +34,7 @@ class Chaos :
             car = Car(velocity,drawer)
             car.moveAtoB(drawer.net,startV,endV)
 
-        for i in range(600):
+        for i in range(60):
             a = random.randint(1, 2 * self.enum)
             for key in self.probabilities.keys():
                 if self.probabilities[key][0] <= a and self.probabilities[key][1] >= a:
