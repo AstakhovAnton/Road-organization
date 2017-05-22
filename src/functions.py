@@ -35,12 +35,12 @@ def lower(p1, p2, p3):
 def sidecurve(points, l):
     points1 = []
     points2 = []
-    n = 6
+    n = 17
     for i in range(n, len(points) - n):
         if onLine(points[i - n], points[i], points[i + n]) == False:
             p = center(points[i - n], points[i], points[i + n])
-            p1 = QPoint(round(points[i].x() + (p.x() - points[i].x())*l/Point.dist(points[i], p)), round(points[i].y() + (p.y() - points[i].y())*l/Point.dist(points[i], p)))
-            p2 = QPoint(round(points[i].x() - (p.x() - points[i].x()) * l / Point.dist(points[i], p)),
+            p1 = Point(round(points[i].x() + (p.x() - points[i].x())*l/Point.dist(points[i], p)), round(points[i].y() + (p.y() - points[i].y())*l/Point.dist(points[i], p)))
+            p2 = Point(round(points[i].x() - (p.x() - points[i].x()) * l / Point.dist(points[i], p)),
                    round(points[i].y() - (p.y() - points[i].y()) * l / Point.dist(points[i], p)))
             if lower(points[i-n], points[i], p1):
                 points1.append(p1)
@@ -53,8 +53,8 @@ def sidecurve(points, l):
             n2 = points[i - n].x() - points[i].x()
             #print(n1, n2)
             mod = (n1 ** 2 + n2 ** 2) ** 0.5
-            p1 = QPoint(round(points[i].x() - n1 * l / mod), round(points[i].y() - n2 * l / mod))
-            p2 = QPoint(round(points[i].x() + n1 * l / mod), round(points[i].y() + n2 * l / mod))
+            p1 = Point(round(points[i].x() - n1 * l / mod), round(points[i].y() - n2 * l / mod))
+            p2 = Point(round(points[i].x() + n1 * l / mod), round(points[i].y() + n2 * l / mod))
             #print(p1, p2)
             #if lower(points[i - 2], points[i], points1[-1]) == lower(points[i - 2], points[i], p1):
             if lower(points[i - n], points[i], p1):
@@ -71,7 +71,7 @@ def sidecurve(points, l):
 
 def multiplecurves(points, n, l):
     list = []
-    for i in range(1, n):
+    for i in range(1, n + 1):
         s = sidecurve(points, i*l)
         list.append(s[0])
         list.append(s[1])

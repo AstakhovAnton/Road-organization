@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QPoint
-from PyQt5.QtGui import QPolygon
+from PyQt5.QtGui import QPolygon, QPen
 
 class Point:
     def __init__(self, abs, ord):
@@ -63,31 +63,3 @@ class Vertex(Point):
     def extract(self):
         return (self.x(), self.y())
 
-class Road:
-    def __init__(self, beginningVertex, net):
-        self.vertex1 = beginningVertex
-        self.ready = False
-        self.isPrintable = True
-        self.points = []
-        self.net = net
-
-    def finish(self, endingVertex, points):
-        if self.ready == False:
-            self.vertex2 = endingVertex
-            self.points = points
-            self.ready = True
-            self.net.add_edge(self.vertex1.name, self.vertex2.name, len(self.points), self.extract())
-
-    def polygonize(self):
-        if self.ready:
-            qpoints = []
-            for point in self.points:
-                qpoints.append(point.myQPoint())
-            return QPolygon(qpoints)
-
-    def extract(self):
-        if self.ready:
-            points = []
-            for point in self.points:
-                points.append((point.x(), point.y()))
-            return points
