@@ -36,6 +36,12 @@ class Example(QMainWindow):
 
         self.addDockWidget(Qt.BottomDockWidgetArea, mydocwidget)
 
+
+        self.setAutoFillBackground(True)
+        self.p = self.palette()
+        self.p.setColor(self.backgroundRole(), col)
+        self.setPalette(self.p)
+
         self.widget.setStyleSheet("QWidget { background-color: %s }"
                                     % col.name())
 
@@ -160,9 +166,11 @@ class Example(QMainWindow):
             for i in range(len(list2)//2) :
                 vertices.append((list2[2*i], list2[2*i+1]))
 
+
             line = fd.readline()
             while line != '':
                 road = []
+
                 list1 = line.split()
                 list2 = []
 
@@ -177,9 +185,8 @@ class Example(QMainWindow):
                     road.append((list2[2 * i], list2[2 * i + 1]))
                 roads.append(road)
                 line = fd.readline()
-            self.widget.drawer.loadFromFile(vertices, roads)
             fd.close()
-
+            self.widget.drawer.loadFromFile(vertices, roads)
 
     def showDialog(self):
         col = QColorDialog.getColor()
@@ -187,6 +194,8 @@ class Example(QMainWindow):
         if col.isValid():
             self.widget.setStyleSheet("QWidget { background-color: %s }"
                                     % col.name())
+            self.p.setColor(self.backgroundRole(), col)
+            self.setPalette(self.p)
 
 class MyWidget(QWidget) :
 
@@ -197,16 +206,30 @@ class MyWidget(QWidget) :
 
     def initUI(self):
         self.drawer = Drawer(self)
-        self.btn1 = QPushButton('Переключение режимов', self)
+
+        drawAction = QAction('Draw schema', self)
+        drawAction.triggered.connect(self.drawer.controller.switchBehaviorToDrawing)
+
+        moveAction = QAction('Motion', self)
+        moveAction.triggered.connect(self.drawer.controller.switchBehaviorToMovement)
+
+        self.listofactions2 = []
+        self.listofactions2.append(drawAction)
+        self.listofactions2.append(moveAction)
+
+        self.btn1 = QComboBox(self)
+        self.btn1.addItem('Draw schema')
+        self.btn1.addItem('Motion')
         self.btn1.resize(self.btn1.sizeHint())
-        self.btn1.clicked.connect(self.drawer.controller.switchByButton)
-        self.btn2 = QPushButton('Хаос', self)
+        self.btn1.setFont(QFont('SansSerif', 10))
+
+        self.btn1.activated[str].connect(self.chooseWorkingType)
+
+
+        self.btn2 = QPushButton('Chaos', self)
         self.btn2.resize(self.btn2.sizeHint())
         self.btn2.clicked.connect(self.drawer.chaos)
 
-        #   self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
-        #  self.btn3.resize(self.btn3.sizeHint())
-        # self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
 
         oneSided = QAction('OneSided road', self)
         oneSided.triggered.connect(self.drawer.controller.setOneSided)
@@ -221,6 +244,8 @@ class MyWidget(QWidget) :
         btn3 = QComboBox(self)
         btn3.addItem('TwoSided road')
         btn3.addItem('OneSided road')
+        btn3.resize(btn3.sizeHint())
+        btn3.setFont(QFont('SansSerif', 10))
 
         btn3.activated[str].connect(self.chooseRoadSchema)
 
@@ -243,6 +268,11 @@ class MyWidget(QWidget) :
                 action.trigger()
                 break
 
+    def chooseWorkingType(self, str):
+        for action in self.listofactions2 :
+            if action.text() == str :
+                action.trigger()
+                break
 
 if __name__ == '__main__':
 
