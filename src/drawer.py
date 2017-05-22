@@ -148,13 +148,6 @@ class Drawer(QWidget):
         q3 = QPainter()
 
         q4 = QPainter()
-        for tracker in self.carList:
-            if tracker.pos:
-                q4.begin(self)
-                brush = QBrush(Qt.SolidPattern)
-                q4.setBrush(brush)
-                q4.drawEllipse(tracker.pos.myQPoint(), 5, 5)
-
         for vertex in self.vertices:
             q2.begin(self)
             brush = QBrush(Qt.white, Qt.SolidPattern)
@@ -164,6 +157,11 @@ class Drawer(QWidget):
             q2.drawEllipse(vertex.myQPoint(), 50, 50)
             q2.setFont(QFont('Decorative', 10))
             q2.drawText(vertex.x() + 20, vertex.y() + 20, 30, 20, 0, vertex.name)
+            q2.end()
+            q2.begin(self)
+            brush = QBrush(Qt.black, Qt.SolidPattern)
+            q2.setBrush(brush)
+            q2.drawEllipse(vertex.myQPoint(), 25, 25)
         for vertex in self.vertices:
             if vertex.isBeginning:
                 q3.begin(self)
@@ -175,6 +173,12 @@ class Drawer(QWidget):
                 pen = QPen(Qt.red, 2, Qt.DashLine)
                 q3.setPen(pen)
                 q3.drawEllipse(vertex.myQPoint(), 50, 50)
+        for tracker in self.carList:
+            if tracker.pos:
+                q4.begin(self)
+                brush = QBrush(Qt.SolidPattern)
+                q4.setBrush(brush)
+                q4.drawEllipse(tracker.pos.myQPoint(), 5, 5)
         q1.end()
         q2.end()
         q3.end()
