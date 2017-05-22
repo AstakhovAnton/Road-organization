@@ -76,7 +76,7 @@ class Car:
                 while net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i + 10] != 0:
                     time.sleep(1/waiting)
             else:
-                while no_wait == 0:
+                while no_wait == 0 and self.where != self.finish_vertex:
                     no_wait = 1
 
                     for vertex_predecessors in net.matrix.predecessors(self.where):
