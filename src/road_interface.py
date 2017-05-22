@@ -1,8 +1,5 @@
 import sys
-#from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QMessageBox
-#from PyQt5.QtWidgets import (QWidget, QToolTip,
-#                             QPushButton, QApplication, QHBoxLayout, QVBoxLayout)
-#from PyQt5.QtGui import QFont, QIcon
+
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -24,18 +21,20 @@ class Example(QMainWindow):
 
         col = QColor(255, 255, 255)
 
-        mydocwidget = QDockWidget('colour', self)
+        mydocwidget2 = QDockWidget('menu', self)
+        menubar2 = self.menuBar()
+        Menu = menubar2.addMenu('&Show vertices')
+        mydocwidget2.setWidget(menubar2)
+        self.addDockWidget(Qt.RightDockWidgetArea, mydocwidget2)
 
-        btn = QPushButton('colour', self)
+        mydocwidget = QDockWidget('color', self)
+
+        btn = QPushButton('color', self)
         btn.resize(btn.sizeHint())
-
-
         btn.clicked.connect(self.showDialog)
 
         mydocwidget.setWidget(btn)
-
         self.addDockWidget(Qt.BottomDockWidgetArea, mydocwidget)
-
 
         self.setAutoFillBackground(True)
         self.p = self.palette()
@@ -78,6 +77,10 @@ class Example(QMainWindow):
         loadAction.setStatusTip('Download existing file')
         loadAction.triggered.connect(self.load)
 
+        cleanAction = QAction(QIcon('../resources/cleaningicon.png'), 'Clean', self)
+        cleanAction.setStatusTip('Clean screen')
+        cleanAction.triggered.connect(self.clean)
+
         self.statusBar()
 
         menubar = self.menuBar()
@@ -85,6 +88,8 @@ class Example(QMainWindow):
         fileMenu.addAction(exitAction)
         fileMenu.addAction(saveAction)
         fileMenu.addAction(loadAction)
+        fileMenu.addAction(cleanAction)
+
 
         toolbar = self.addToolBar('Exit')
         toolbar.addAction(exitAction)
@@ -101,11 +106,22 @@ class Example(QMainWindow):
         toolbar5 = self.addToolBar('Download')
         toolbar5.addAction(downloadAction)
 
+        toolbar6 = self.addToolBar('Clean screen')
+        toolbar6.addAction(cleanAction)
+
         QToolTip.setFont(QFont('SansSerif', 10))
 
         self.setGeometry(400, 300, 450, 350)
         self.setWindowTitle('Main window')
         self.show()
+
+
+    def clean(self):
+
+        msg = QMessageBox.question(self, 'Question', "Are you sure to clean the screen?", QMessageBox.Yes |
+                                         QMessageBox.No, QMessageBox.No)
+        if msg == QMessageBox.Yes:
+            print('Yes')
 
 
 
