@@ -15,37 +15,16 @@ class Example(QMainWindow):
         self.initUI()
 
     def initUI(self):
-
+        self.CarList = CarListWidget(self)
         self.widget = MyWidget(self)
         self.setCentralWidget(self.widget)
 
         col = QColor(255, 255, 255)
 
+
         mydocwidget2 = QDockWidget('menu', self)
-        menubar2 = self.menuBar()
-        Menu = menubar2.addMenu('&Show vertices')
-        mydocwidget2.setWidget(menubar2)
+        mydocwidget2.setWidget(self.CarList)
         self.addDockWidget(Qt.RightDockWidgetArea, mydocwidget2)
-
-        mydocwidget = QDockWidget('color', self)
-
-        btn = QPushButton('color', self)
-        btn.resize(btn.sizeHint())
-        btn.clicked.connect(self.showDialog)
-
-        mydocwidget.setWidget(btn)
-        self.addDockWidget(Qt.BottomDockWidgetArea, mydocwidget)
-
-        self.setAutoFillBackground(True)
-        self.p = self.palette()
-        self.p.setColor(self.backgroundRole(), col)
-        self.setPalette(self.p)
-
-        self.widget.setStyleSheet("QWidget { background-color: %s }"
-                                    % col.name())
-
-
-
 
         exitAction = QAction( QIcon('../resources/exit2.png'),'Exit', self)
         exitAction.setShortcut('Ctrl+Q')
@@ -111,7 +90,7 @@ class Example(QMainWindow):
 
         QToolTip.setFont(QFont('SansSerif', 10))
 
-        self.setGeometry(400, 300, 450, 350)
+        self.setGeometry(300, 200, 650, 550)
         self.setWindowTitle('Main window')
         self.show()
 
@@ -218,9 +197,11 @@ class MyWidget(QWidget) :
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.initUI()
 
     def initUI(self):
+
         self.drawer = Drawer(self)
 
         drawAction = QAction('Draw schema', self)
@@ -262,8 +243,9 @@ class MyWidget(QWidget) :
         btn3.addItem('OneSided road')
         btn3.resize(btn3.sizeHint())
         btn3.setFont(QFont('SansSerif', 10))
-
         btn3.activated[str].connect(self.chooseRoadSchema)
+
+                
 
         hbox = QHBoxLayout()
         hbox.addWidget(btn3)
@@ -289,6 +271,33 @@ class MyWidget(QWidget) :
             if action.text() == str :
                 action.trigger()
                 break
+
+class CarListWidget(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.initUI()
+    def initUI(self):
+        self.myList = QListWidget(self)
+
+
+    def addItem(self, name, vel, finish):
+        self.myList.addItems([name + '  ' + str(vel) + '  ' + finish])
+    def setNewVelocity(self, int, name):
+        for i in range(self.myList.count()):
+            item = self.myList.item(i)
+            list = item.text().split()
+            if list[0] == name:
+                item.setText(list[0] + '  ' + list[1] + '  ' + list[2] + '  ' + str(int))
+                break
+    def removeItem(self, name):
+        for i in range(self.myList.count()):
+            item = self.myList.item(i)
+            list = item.text().split()
+            if list[0] == name:
+                self.myList.takeItem(i)
+                break
+
 
 if __name__ == '__main__':
 

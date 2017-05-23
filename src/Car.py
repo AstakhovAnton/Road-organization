@@ -12,7 +12,7 @@ class Car:
     def __init__(self, v, drawer):
         self.velocity = v
         self.drawer = drawer
-        self.current_velocity = 5
+        self.current_velocity = 2
 
     def way(self, net, whence):
         try:
@@ -25,12 +25,20 @@ class Car:
         self.current_vertex = start.name
         self.start_vertex = start.name
         self.finish_vertex = finish.name
-        self.tracker = Tracker()
+        self.tracker = Tracker(self)
+        self.report_velocity()
         self.drawer.carList.append(self.tracker)
         self.movement(net)
         self.drawer.carList.remove(self.tracker)
+        self.removeCar()
         start.setUnallocated()
         finish.setUnallocated()
+
+    def report_velocity(self):
+        self.drawer.signal.newvelocity.emit(self.current_velocity, self.tracker.name)
+
+    def removeCar(self):
+        self.drawer.signal.removeCar.emit(self.tracker.name)
 
     def movement(self, net):
         if self.current_vertex == self.finish_vertex: ## if arrives
@@ -52,7 +60,6 @@ class Car:
         self.future_where = self.where
         distance = len(net.matrix[self.current_vertex][self.where][self.best_road]['dots']) ## traffic
         for i in range(distance):
-
             if self.where != self.finish_vertex and distance == i + 30: ## where
                 self.future_where = self.way(net, self.where)
                 best_len = inf
@@ -66,21 +73,21 @@ class Car:
                 accel = distance / 2
             else:
                 accel = 100
-
             if i <= accel:
                 self.current_velocity = math.sqrt(vmin ** 2 + i/accel * (self.velocity ** 2 - vmin ** 2))
+                self.report_velocity()
 
             if distance <= i + accel - 1:
                 self.current_velocity = math.sqrt(self.velocity ** 2 - (accel - distance + i + 1)/accel * (self.velocity ** 2 - vmin ** 2))
-
+                self.report_velocity()
             if i != 0:
                 time.sleep(1/self.current_velocity)
-
 
             no_wait = 0 ## when may go
             if distance > i + 10:
                 while net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i + 10] != 0:
                     time.sleep(1/waiting)
+
             else:
                 while no_wait == 0 and self.where != self.finish_vertex:
                     no_wait = 1
@@ -117,14 +124,16 @@ class Car:
 
             #if i < 35 or i > 400:
             #    print(i, self.velocity)
-
+            #print(self.current_velocity)
             net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i] = self ## car on road
             if i > 0:
                      net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][i - 1] = 0
 
             self.current_point = net.matrix[self.current_vertex][self.where][self.best_road]['dots'][i]
             point = Point(self.current_point[0], self.current_point[1])
+
             self.tracker.setPos(point)
+
 
         net.matrix[self.current_vertex][self.where][self.best_road]['on_road'][distance - 1] = 0
         self.current_vertex = self.where

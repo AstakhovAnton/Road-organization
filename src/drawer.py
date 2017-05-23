@@ -12,6 +12,9 @@ from PyQt5.QtCore import *
 
 class Communicate(QObject):
     switch = pyqtSignal()
+    addCarItem = pyqtSignal(str, int, str)
+    newvelocity = pyqtSignal(int, str)
+    removeCar = pyqtSignal(str)
 
 class Controller:
     def __init__(self, drawer):
@@ -70,9 +73,13 @@ class Controller:
 class Drawer(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.controller = Controller(self)
         self.signal = Communicate()
         self.signal.switch.connect(self.controller.switchBehavior)
+        self.signal.addCarItem.connect(self.parent.parent.CarList.addItem)
+        self.signal.newvelocity.connect(self.parent.parent.CarList.setNewVelocity)
+        self.signal.removeCar.connect(self.parent.parent.CarList.removeItem)
         self.initUI()
         self.setMouseTracking(True)
 
