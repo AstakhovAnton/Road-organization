@@ -23,12 +23,14 @@ class Controller:
         self.setDrawerSchema(self.schema)
 
     def setControllerSchema(self):
-        self.schema = (Drawer.pressMethods[self.i], Drawer.moveMethods[self.i], Drawer.drawMethods[self.i])
+        self.schema = (Drawer.pressMethods[self.i], Drawer.moveMethods[self.i], Drawer.drawMethods[self.i], Drawer.carMethods[self.i])
 
     def setDrawerSchema(self, schema):
         self.drawer.customMousePressEvent = schema[0]
         self.drawer.customMouseMoveEvent = schema[1]
         self.drawer.drawAdditional = schema[2]
+        self.drawer.move = schema[3]
+
 
     def switchBehavior(self):
         if self.i == 0:
@@ -58,6 +60,11 @@ class Controller:
 
     def switchBehaviorToMovement(self):
         self.i = 2
+        self.setControllerSchema()
+        self.setDrawerSchema(self.schema)
+
+    def switchBehaviourToSingletone(self):
+        self.i = 3
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
 
@@ -315,8 +322,14 @@ class Drawer(QWidget):
                 self.count = 0
                 self.hasBegun = False
 
-    def move(self, v1, v2):
+    def startStream(self, v1, v2):
         s = Stream(self, v1, v2, 10)
+
+    def startSingletone(self, v1, v2):
+        def behavior(drawer, v1, v2):
+            car = Car(100, drawer)
+            car.moveAtoB(drawer.net, v1, v2)
+        threading.Thread(target = behavior, args = (self, v1, v2,)).start()
 
     def chaos(self):
         self.controller.switchBehaviorToValue(2)
@@ -343,9 +356,11 @@ class Drawer(QWidget):
     def straightPath(self):
         pass
 
-    pressMethods = (waitForFinish, makeVertexStartRoad, allocate)
-    moveMethods = (moveAndDraw, noChanges, noChanges)
-    drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
+    pressMethods = (waitForFinish, makeVertexStartRoad, allocate, allocate)
+    moveMethods = (moveAndDraw, noChanges, noChanges, noChanges)
+    drawMethods = (mouseTracePainter, nothingToAdd, noBorders, noBorders)
+    carMethods = (noChanges, noChanges, startStream, startSingletone)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
