@@ -73,17 +73,12 @@ class Example(QMainWindow):
         toolbar = self.addToolBar('Exit')
         toolbar.addAction(exitAction)
 
-        toolbar2 = self.addToolBar('Previous')
-        toolbar2.addAction(previousAction)
-
-        toolbar3 = self.addToolBar('next')
-        toolbar3.addAction(nextAction)
 
         toolbar4 = self.addToolBar('Save')
         toolbar4.addAction(saveAction)
 
-        toolbar5 = self.addToolBar('Download')
-        toolbar5.addAction(downloadAction)
+        toolbar5 = self.addToolBar('Load')
+        toolbar5.addAction(loadAction)
 
         toolbar6 = self.addToolBar('Clean screen')
         toolbar6.addAction(cleanAction)
@@ -242,6 +237,7 @@ class MyWidget(QWidget) :
 
 
         self.btn2 = QPushButton('Chaos', self)
+        self.btn2.setFont(QFont('SansSerif', 10))
         self.btn2.resize(self.btn2.sizeHint())
         self.btn2.clicked.connect(self.drawer.chaos)
 
