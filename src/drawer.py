@@ -1,6 +1,5 @@
-import sys, time, math, threading
+import sys, math, threading
 from Matrix import Network
-from Car import Car
 from Points import Point, Vertex
 from Road import Road
 from Chaos import Chaos
@@ -46,13 +45,11 @@ class Controller:
             self.i = 1
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-        #self.drawer.update()
 
     def switchBehaviorToValue(self, i):
         self.i = i
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
-        #self.drawer.update()
 
     def switchBehaviorToDrawing(self):
         self.i = 1
@@ -69,6 +66,10 @@ class Controller:
 
     def setTwoSided(self):
         self.drawer.isOneSided = False
+
+    def changen(self, str):
+        i = int(str)
+        self.drawer.n = i
 
 class Drawer(QWidget):
     def __init__(self, parent):
@@ -99,7 +100,7 @@ class Drawer(QWidget):
         self.timer.timeout.connect(self.update)
         self.timer.start(20)
         self.net = Network()
-        self.n = 2
+        self.n = 1
         self.isOneSided = False
 
     def loadFromFile(self, verticeslist, roadlists):
@@ -170,16 +171,16 @@ class Drawer(QWidget):
             q2.setBrush(brush)
             q2.drawEllipse(vertex.myQPoint(), 25, 25)
         for vertex in self.vertices:
-            if vertex.isBeginning:
+            if vertex.isBeginning > 0:
                 q3.begin(self)
                 pen = QPen(Qt.blue, 2, Qt.DashLine)
                 q3.setPen(pen)
-                q3.drawEllipse(vertex.myQPoint(), 50 , 50)
-            if vertex.isEnd:
+                q3.drawEllipse(vertex.myQPoint(), 51 , 51)
+            if vertex.isEnd > 0:
                 q3.begin(self)
                 pen = QPen(Qt.red, 2, Qt.DashLine)
                 q3.setPen(pen)
-                q3.drawEllipse(vertex.myQPoint(), 50, 50)
+                q3.drawEllipse(vertex.myQPoint(), 52, 52)
         for tracker in self.carList:
             if tracker.pos:
                 q4.begin(self)
@@ -271,7 +272,6 @@ class Drawer(QWidget):
             point = Point(event.x(), event.y())
             if not self.vertices or self.mindistance(point) > 50:
                 self.vertices.append(Vertex.newVertex(event.x(), event.y(), self.net))
-                #self.update()
         point = Point(event.x(), event.y())
         if event.button() == Qt.LeftButton and self.vertices and self.mindistance(point) <= 20:
             v = self.closestvertex(point)
@@ -303,13 +303,11 @@ class Drawer(QWidget):
             else:
                 self.v2 = self.closestvertex(point)
                 self.v2.setEnd()
-            #self.update()
             self.count += 1
             if self.count == 2:
                 self.move(self.v1, self.v2)
                 self.count = 0
                 self.hasBegun = False
-                #self.update()
 
     def move(self, v1, v2):
         s = Stream(self, v1, v2, 10)
@@ -336,45 +334,14 @@ class Drawer(QWidget):
     def noBorders(self):
         return
 
+    def straightPath(self):
+        pass
+
     pressMethods = (waitForFinish, makeVertexStartRoad, allocate)
     moveMethods = (moveAndDraw, noChanges, noChanges)
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders)
 
-class AuxWidget(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.initUI()
-
-    def initUI(self):
-        self.setGeometry(200, 200, 1000, 500)
-        self.setWindowTitle('Drawer')
-        self.show()
-
-        self.drawer = Drawer(self)
-
-        self.btn1 = QPushButton('Переключение режимов', self)
-        self.btn1.resize(self.btn1.sizeHint())
-        self.btn1.clicked.connect(self.drawer.controller.switchByButton)
-        self.btn2 = QPushButton('Хаос', self)
-        self.btn2.resize(self.btn2.sizeHint())
-        self.btn2.clicked.connect(self.drawer.chaos)
-        self.btn3 = QPushButton('Одностороннее/Двустороннее движение', self)
-        self.btn3.resize(self.btn3.sizeHint())
-        self.btn3.clicked.connect(self.drawer.controller.switchRoadBuildingSchema)
-
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.btn3)
-        hbox.addStretch(1)
-        hbox.addWidget(self.btn1)
-        hbox.addWidget(self.btn2)
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.drawer)
-        vbox.addLayout(hbox)
-
-        self.setLayout(vbox)
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = AuxWidget(None)
+    ex = Drawer(None)
     sys.exit(app.exec_())
