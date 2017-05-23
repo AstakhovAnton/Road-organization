@@ -4,6 +4,7 @@ from Points import Point, Vertex
 from Road import Road
 from Chaos import Chaos
 from Stream import Stream
+from Car import Car
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -63,7 +64,7 @@ class Controller:
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
 
-    def switchBehaviourToSingletone(self):
+    def switchBehaviourToSingleton(self):
         self.i = 3
         self.setControllerSchema()
         self.setDrawerSchema(self.schema)
@@ -318,14 +319,15 @@ class Drawer(QWidget):
                 self.v2.setEnd()
             self.count += 1
             if self.count == 2:
-                self.move(self.v1, self.v2)
+                self.move(self, self.v1, self.v2)
                 self.count = 0
                 self.hasBegun = False
 
     def startStream(self, v1, v2):
         s = Stream(self, v1, v2, 10)
 
-    def startSingletone(self, v1, v2):
+    def startSingleton(self, v1, v2):
+
         def behavior(drawer, v1, v2):
             car = Car(100, drawer)
             car.moveAtoB(drawer.net, v1, v2)
@@ -359,7 +361,7 @@ class Drawer(QWidget):
     pressMethods = (waitForFinish, makeVertexStartRoad, allocate, allocate)
     moveMethods = (moveAndDraw, noChanges, noChanges, noChanges)
     drawMethods = (mouseTracePainter, nothingToAdd, noBorders, noBorders)
-    carMethods = (noChanges, noChanges, startStream, startSingletone)
+    carMethods = (noChanges, noChanges, startStream, startSingleton)
 
 
 if __name__ == '__main__':

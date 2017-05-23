@@ -100,7 +100,8 @@ class Example(QMainWindow):
         msg = QMessageBox.question(self, 'Question', "Are you sure to clean the screen?", QMessageBox.Yes |
                                          QMessageBox.No, QMessageBox.No)
         if msg == QMessageBox.Yes:
-            print('Yes')
+
+            self.widget.drawer.controller.deleteAll()
 
 
 
@@ -215,16 +216,25 @@ class MyWidget(QWidget) :
         drawAction = QAction('Draw schema', self)
         drawAction.triggered.connect(self.drawer.controller.switchBehaviorToDrawing)
 
-        moveAction = QAction('Motion', self)
-        moveAction.triggered.connect(self.drawer.controller.switchBehaviorToMovement)
+        streamAction = QAction('Stream', self)
+        streamAction.triggered.connect(self.drawer.controller.switchBehaviorToMovement)
+
+        singleton = QAction('Singleton', self)
+        singleton.triggered.connect(self.drawer.controller.switchBehaviourToSingleton)
+
 
         self.listofactions2 = []
         self.listofactions2.append(drawAction)
-        self.listofactions2.append(moveAction)
+        self.listofactions2.append(streamAction)
+        self.listofactions2.append(singleton)
 
         self.btn1 = QComboBox(self)
         self.btn1.addItem('Draw schema')
-        self.btn1.addItem('Motion')
+        self.btn1.addItem('Stream')
+
+        self.btn1.addItem('Singleton')
+
+
         self.btn1.resize(self.btn1.sizeHint())
         self.btn1.setFont(QFont('SansSerif', 10))
 
@@ -286,6 +296,7 @@ class MyWidget(QWidget) :
             if action.text() == str :
                 action.trigger()
                 break
+
 
 class CarListWidget(QWidget):
     def __init__(self, parent):
