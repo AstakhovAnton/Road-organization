@@ -130,7 +130,11 @@ class Example(QMainWindow):
 
             for road in roads:
                 list = road.extract()
-
+                fd.write(str(road.n))
+                if road.isOneSided:
+                    fd.write(' 1 ')
+                else:
+                    fd.write(' 0 ')
                 for cortege in list:
                     fd.write(str(cortege) + ' ')
                 fd.write('\n')
@@ -168,7 +172,11 @@ class Example(QMainWindow):
 
                 list1 = line.split()
                 list2 = []
-
+                n = int(list1.pop(0))
+                i = int(list1.pop(0))
+                bool = True
+                if i == 0:
+                    bool = False
                 for element in list1:
                     element = element.replace('(', '')
                     element = element.replace(')', '')
@@ -178,7 +186,7 @@ class Example(QMainWindow):
 
                 for i in range(len(list2) // 2):
                     road.append((list2[2 * i], list2[2 * i + 1]))
-                roads.append(road)
+                roads.append((n, bool, road))
                 line = fd.readline()
             fd.close()
             self.widget.drawer.loadFromFile(vertices, roads)

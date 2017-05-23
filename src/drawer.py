@@ -104,18 +104,20 @@ class Drawer(QWidget):
         self.isOneSided = False
 
     def loadFromFile(self, verticeslist, roadlists):
-        pass
         self.vertices = []
         self.roads = []
         for vcortege in verticeslist:
             self.vertices.append(Vertex.newVertex(vcortege[0], vcortege[1], self.net))
         i = 0
-        for rlist in roadlists:
+        for cortege in roadlists:
+            n = cortege[0]
+            bool = cortege[1]
+            rlist = cortege[2]
             for vertex in self.vertices:
                 if vertex.x() == rlist[0][0] and vertex.y() == rlist[0][1]:
                     begv = vertex
                     break
-            road = Road(begv, self.net)
+            road = Road(begv, self.net, n, bool)
             for vertex in self.vertices:
                 if vertex.x() == rlist[-1][0] and vertex.y() == rlist[-1][1]:
                     endv = vertex
@@ -123,12 +125,8 @@ class Drawer(QWidget):
             points = []
             for cortege in rlist:
                 points.append(Point(cortege[0], cortege[1]))
-            road.finish(endv, points)
-            if i % 2 == 1:
-                road.isPrintable = False
-            i += 1
+            road.found(points, endv)
             self.roads.append(road)
-        #self.update()
 
 
     def mousePressEvent(self, event):
