@@ -245,13 +245,20 @@ class MyWidget(QWidget) :
         btn3.setFont(QFont('SansSerif', 10))
         btn3.activated[str].connect(self.chooseRoadSchema)
 
-                
+        lanes = QLabel('Lanes', self)
+        lane = QLineEdit()
+        lane.setText('1')
+        lane.setMaximumWidth(15)
+        lane.setFont(QFont('SansSerif', 10))
+        lane.textChanged.connect(self.drawer.controller.changen)
 
         hbox = QHBoxLayout()
         hbox.addWidget(btn3)
         hbox.addStretch(1)
         hbox.addWidget(self.btn1)
         hbox.addWidget(self.btn2)
+        hbox.addWidget(lanes)
+        hbox.addWidget(lane)
 
 
         vbox = QVBoxLayout()
