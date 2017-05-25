@@ -1,0 +1,8 @@
+1. git clone https://github.com/AstakhovAnton/Road-organization
+2. cd ./Road-organization/src
+3. python -m pip install cx_Freeze --upgrade
+4. python setup.py build
+5. cd ..
+6. move ./resources ./src/build
+7. cd ./src/build
+8. Запускаем road_interface.exe
